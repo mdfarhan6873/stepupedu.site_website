@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { BellIcon, HomeIcon, PlusCircleIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 
 interface User {
   id: string;
@@ -72,11 +73,27 @@ export default function Layout({
         </div>
       </nav>
 
-      <main className="py-10">
+      <main className="py-10 pb-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {children}
         </div>
       </main>
+      {/* Bottom Navigation for Mobile - visible on all teacher routes */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around items-center h-16 z-40 shadow-md w-full max-w-5xl mx-auto px-2">
+        <a href="/dashboard/teacher" className="flex flex-col items-center focus:outline-none text-blue-600">
+          <HomeIcon className="h-7 w-7" />
+          <span className="text-xs">Home</span>
+        </a>
+        
+        <a href="/dashboard/teacher/notifications" className="flex flex-col items-center focus:outline-none text-gray-400 hover:text-blue-600">
+          <BellIcon className="h-7 w-7" />
+          <span className="text-xs">Notifications</span>
+        </a>
+        <a href="/dashboard/teacher/mark-my-attendance" className="flex flex-col items-center focus:outline-none text-green-600 hover:text-green-700">
+          <CheckCircleIcon className="h-7 w-7" />
+          <span className="text-xs">My Attendance</span>
+        </a>
+      </nav>
     </div>
   );
 }

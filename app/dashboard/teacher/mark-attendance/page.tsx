@@ -84,10 +84,10 @@ const MarkAttendance = () => {
         <div className="absolute -bottom-8 left-20 w-72 h-72 bg-emerald-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
       </div>
 
-      <div className="relative z-10 min-h-screen px-6 py-8">
+      <div className="relative z-10 min-h-screen px-0 py-3">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
-          <div className="flex items-center mb-8">
+          <div className="flex items-center mb-5">
             <button 
               onClick={() => router.back()} 
               className="flex items-center gap-2 bg-white bg-opacity-10 backdrop-blur-lg rounded-xl px-4 py-2 text-white hover:bg-opacity-20 transition-all duration-300 border border-white border-opacity-20"
@@ -112,13 +112,19 @@ const MarkAttendance = () => {
           <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-3xl p-8 border border-white border-opacity-20 shadow-xl mb-8">
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Date Display */}
-              <div className="bg-white bg-opacity-5 rounded-2xl p-4">
-                <div className="flex items-center gap-2 mb-3">
+              <div className="bg-white bg-opacity-5 rounded-2xl p-1">
+                <div className="flex items-center gap-1 mb-3">
                   <CalendarIcon className="w-5 h-5 text-blue-400" />
                   <span className="text-sm font-medium text-white">Date</span>
                 </div>
                 <div className="flex flex-wrap gap-2 justify-center">
-                  <span className="bg-white bg-opacity-10 rounded-lg px-3 py-2 text-sm font-medium text-white">{new Date(date).toLocaleDateString()}</span>
+                  <input
+                    type="date"
+                    value={date}
+                    onChange={e => setDate(e.target.value)}
+                    className="bg-white bg-opacity-10 rounded-lg px-3 py-2 text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-blue-500 border-none"
+                    required
+                  />
                 </div>
               </div>
 
@@ -161,7 +167,7 @@ const MarkAttendance = () => {
 
               {/* Students List */}
               {students.length > 0 && (
-                <div className="bg-white bg-opacity-5 rounded-2xl p-6">
+                <div className="bg-white bg-opacity-5 rounded-2xl p-1">
                   <div className="flex items-center gap-2 mb-4">
                     <UserGroupIcon className="w-5 h-5 text-blue-400" />
                     <span className="text-lg font-medium text-white">Students ({students.length})</span>

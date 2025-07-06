@@ -1,28 +1,25 @@
 'use client'
 import React, { useEffect, useState } from 'react';
-import { ClipboardDocumentCheckIcon, CalendarIcon, ArrowLeftIcon, UserGroupIcon, BookOpenIcon } from '@heroicons/react/24/outline';
+import { ClipboardDocumentCheckIcon, CalendarIcon, ArrowLeftIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
+import { usePatchSubjectAttendance } from '@/lib/hooks/usePatchSubjectAttendance';
 
 const MarkAttendance = () => {
-  const [year, setYear] = useState("");
-  const [month, setMonth] = useState("");
   const [date, setDate] = useState("");
   const [className, setClassName] = useState("");
   const [section, setSection] = useState("");
   const [subject, setSubject] = useState("");
   const [students, setStudents] = useState<any[]>([]);
-  const [attendance, setAttendance] = useState<any>({});
+  const [attendance, setAttendance] = useState<Record<string, 'Present' | 'Absent'>>({});
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
+  const { patchAttendance, loading: patching } = usePatchSubjectAttendance();
 
-  // Set current year, month, date on mount
+  // Set current date on mount
   useEffect(() => {
-    const now = new Date();
-    setYear(now.getFullYear().toString());
-    setMonth((now.getMonth() + 1).toString().padStart(2, '0'));
-    setDate(now.toISOString().slice(0, 10));
+    setDate(new Date().toISOString().slice(0, 10));
   }, []);
 
   // Fetch students for selected class/section
@@ -35,7 +32,7 @@ const MarkAttendance = () => {
           setStudents(data);
           setAttendance(
             Object.fromEntries(
-              data.map((s: any) => [s._id, { status: "present" }])
+              data.map((s: any) => [s._id, 'Present'])
             )
           );
         })
@@ -48,14 +45,10 @@ const MarkAttendance = () => {
   }, [className, section]);
 
   const handleStatusToggle = (id: string) => {
-    setAttendance((prev: any) => {
-      const current = prev[id]?.status || "present";
-      let next = "present";
-      if (current === "present") next = "absent";
-      else if (current === "absent") next = "leave";
-      else next = "present";
-      return { ...prev, [id]: { status: next } };
-    });
+    setAttendance((prev) => ({
+      ...prev,
+      [id]: prev[id] === 'Present' ? 'Absent' : 'Present',
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -64,23 +57,16 @@ const MarkAttendance = () => {
     setSuccess("");
     setError("");
     try {
-      const entry = {
-        date,
-        class: className,
+      await patchAttendance({
+        className,
         section,
+        date,
         subject,
         students: students.map((s: any) => ({
-          studentName: s.name,
-          rollNo: s.rollNo,
-          status: attendance[s._id]?.status || "absent",
+          studentId: s._id,
+          status: attendance[s._id],
         })),
-      };
-      const res = await fetch("/api/attendance", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ year, month, entry }),
       });
-      if (!res.ok) throw new Error("Failed to save attendance");
       setSuccess("Attendance saved successfully!");
     } catch (err: any) {
       setError(err.message || "Failed to save attendance");
@@ -119,7 +105,7 @@ const MarkAttendance = () => {
               </div>
             </div>
             <h2 className="text-2xl font-bold text-white mb-2">Mark Attendance</h2>
-            <p className="text-gray-300">Record student attendance for your class</p>
+            <p className="text-gray-300">Record subject-wise attendance for your class</p>
           </div>
 
           {/* Form Card */}
@@ -129,12 +115,10 @@ const MarkAttendance = () => {
               <div className="bg-white bg-opacity-5 rounded-2xl p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <CalendarIcon className="w-5 h-5 text-blue-400" />
-                  <span className="text-sm font-medium text-white">Today's Date</span>
+                  <span className="text-sm font-medium text-white">Date</span>
                 </div>
                 <div className="flex flex-wrap gap-2 justify-center">
-                  <span className="bg-white bg-opacity-10 rounded-lg px-3 py-2 text-sm font-medium text-white">Year: {year}</span>
-                  <span className="bg-white bg-opacity-10 rounded-lg px-3 py-2 text-sm font-medium text-white">Month: {month}</span>
-                  <span className="bg-white bg-opacity-10 rounded-lg px-3 py-2 text-sm font-medium text-white">Date: {new Date(date).toLocaleDateString()}</span>
+                  <span className="bg-white bg-opacity-10 rounded-lg px-3 py-2 text-sm font-medium text-white">{new Date(date).toLocaleDateString()}</span>
                 </div>
               </div>
 
@@ -182,7 +166,6 @@ const MarkAttendance = () => {
                     <UserGroupIcon className="w-5 h-5 text-blue-400" />
                     <span className="text-lg font-medium text-white">Students ({students.length})</span>
                   </div>
-                  
                   <div className="overflow-x-auto">
                     <div className="bg-white bg-opacity-10 rounded-xl overflow-hidden">
                       <table className="min-w-full">
@@ -197,34 +180,30 @@ const MarkAttendance = () => {
                           {students
                             .sort((a, b) => (a.rollNo || 0) - (b.rollNo || 0))
                             .map((s: any) => (
-                            <tr key={s._id} className="hover:bg-white hover:bg-opacity-5 transition-all duration-300">
-                              <td className="px-4 py-3 text-center text-white font-semibold">{s.rollNo}</td>
-                              <td className="px-4 py-3 text-white">{s.name}</td>
-                              <td className="px-4 py-3 text-center">
-                                <button
-                                  type="button"
-                                  onClick={() => handleStatusToggle(s._id)}
-                                  className="p-2 rounded-lg hover:bg-white hover:bg-opacity-10 transition-all duration-300"
-                                  title="Click to toggle status"
-                                >
-                                  {attendance[s._id]?.status === "present" && (
-                                    <span className="text-green-400 text-2xl">✓</span>
-                                  )}
-                                  {attendance[s._id]?.status === "absent" && (
-                                    <span className="text-red-400 text-2xl">✗</span>
-                                  )}
-                                  {attendance[s._id]?.status === "leave" && (
-                                    <span className="text-yellow-400 text-2xl">⏸</span>
-                                  )}
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
+                              <tr key={s._id} className="hover:bg-white hover:bg-opacity-5 transition-all duration-300">
+                                <td className="px-4 py-3 text-center text-white font-semibold">{s.rollNo}</td>
+                                <td className="px-4 py-3 text-white">{s.name}</td>
+                                <td className="px-4 py-3 text-center">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleStatusToggle(s._id)}
+                                    className="p-2 rounded-lg hover:bg-white hover:bg-opacity-10 transition-all duration-300"
+                                    title="Click to toggle status"
+                                  >
+                                    {attendance[s._id] === 'Present' && (
+                                      <span className="text-green-400 text-2xl">✓</span>
+                                    )}
+                                    {attendance[s._id] === 'Absent' && (
+                                      <span className="text-red-400 text-2xl">✗</span>
+                                    )}
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
                         </tbody>
                       </table>
                     </div>
                   </div>
-
                   {/* Legend */}
                   <div className="mt-4 flex flex-wrap gap-4 justify-center">
                     <div className="flex items-center gap-2">
@@ -234,10 +213,6 @@ const MarkAttendance = () => {
                     <div className="flex items-center gap-2">
                       <span className="text-red-400 text-xl">✗</span>
                       <span className="text-sm text-gray-300">Absent</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-yellow-400 text-xl">⏸</span>
-                      <span className="text-sm text-gray-300">Leave</span>
                     </div>
                   </div>
                 </div>
@@ -258,10 +233,10 @@ const MarkAttendance = () => {
               {/* Submit Button */}
               <button 
                 type="submit" 
-                disabled={loading || students.length === 0} 
+                disabled={patching || loading || students.length === 0} 
                 className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-4 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? (
+                {patching || loading ? (
                   <div className="flex items-center justify-center gap-2">
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                     Saving...

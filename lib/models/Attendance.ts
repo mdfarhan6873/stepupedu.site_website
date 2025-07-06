@@ -1,23 +1,23 @@
 import mongoose from 'mongoose';
 
-const StudentAttendanceSchema = new mongoose.Schema({
-  studentName: { type: String, required: true },
-  rollNo: { type: String, required: true },
-  status: { type: String, enum: ['present', 'absent', 'leave'], required: true },
-});
-
-const AttendanceEntrySchema = new mongoose.Schema({
-  date: { type: String, required: true }, // e.g. '2025-07-05'
-  class: { type: String, required: true },
-  section: { type: String, required: true },
+const SubjectAttendanceSchema = new mongoose.Schema({
   subject: { type: String, required: true },
-  students: [StudentAttendanceSchema],
+  students: [
+    {
+      studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student', required: true },
+      status: { type: String, enum: ['Present', 'Absent'], required: true },
+    },
+  ],
 });
 
-const AttendanceSchema = new mongoose.Schema({
-  year: { type: String, required: true },
-  month: { type: String, required: true },
-  entries: [AttendanceEntrySchema],
-}, { timestamps: true });
+const AttendanceSchema = new mongoose.Schema(
+  {
+    class: { type: String, required: true },
+    section: { type: String, required: true },
+    date: { type: String, required: true }, // YYYY-MM-DD
+    subjects: [SubjectAttendanceSchema],
+  },
+  { timestamps: true }
+);
 
 export default mongoose.models.Attendance || mongoose.model('Attendance', AttendanceSchema);

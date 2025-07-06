@@ -13,10 +13,14 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     await connectDB();
-    const payments = await StudentPayment.find();
+    const { searchParams } = new URL(req.url);
+    const mobileNo = searchParams.get('mobileNo');
+    let query: any = {};
+    if (mobileNo) query.mobileNo = mobileNo;
+    const payments = await StudentPayment.find(query);
     return NextResponse.json(payments);
   } catch (error: any) {
     return NextResponse.json({ message: error.message || 'Failed to fetch student payments' }, { status: 500 });

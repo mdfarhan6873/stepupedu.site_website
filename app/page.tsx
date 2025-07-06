@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 
 const Home = () => {
   const [currentImage, setCurrentImage] = useState(0)
+  const [showAppPopup, setShowAppPopup] = useState(false)
   const router = useRouter()
   const images = [
     { src: '/reading.png', alt: 'Educational illustration 1' },
@@ -35,11 +36,40 @@ const Home = () => {
       setCurrentImage((prev) => (prev + 1) % images.length)
     }, 3000) // Change image every 3 seconds
 
-    return () => clearInterval(timer)
+    setTimeout(() => setShowAppPopup(true), 1200)
+
+    return () => {
+      clearInterval(timer)
+    }
   }, [router, images.length])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      {/* Download App Popup */}
+      {showAppPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-xs w-full text-center relative">
+            <button
+              className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 text-xl font-bold"
+              onClick={() => setShowAppPopup(false)}
+              aria-label="Close"
+            >
+              ×
+            </button>
+            
+            <h3 className="text-lg font-bold mb-2 text-gray-800">Download Our App</h3>
+            <p className="text-gray-600 mb-4">Get the best experience on mobile. Download the Step Up Education app now!</p>
+            <a
+              href="/app-release.apk"
+              download
+              className="inline-block bg-gradient-to-r from-purple-500 to-pink-600 text-white font-semibold px-6 py-2 rounded-xl shadow hover:scale-105 hover:shadow-lg transition-all duration-300"
+            >
+              Download App
+            </a>
+          </div>
+        </div>
+      )}
+
       {/* Background Animation */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-4 -left-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>

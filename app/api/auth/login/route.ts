@@ -46,14 +46,32 @@ export async function POST(req: NextRequest) {
     }
 
     // Create session data
-    const session = {
-      user: {
-        id: user._id,
-        name: user.name,
-        role: user.role,
-        mobileNo: user.mobileNo
-      }
+    type SessionUser = {
+      id: any;
+      name: any;
+      role: any;
+      mobileNo: any;
+      class?: any;
+      section?: any;
+      rollNo?: any;
     };
+
+    let sessionUser: SessionUser = {
+      id: user._id,
+      name: user.name,
+      role: user.role,
+      mobileNo: user.mobileNo
+    };
+    // Add extra fields for student
+    if (user.role === 'student') {
+      sessionUser = {
+        ...sessionUser,
+        class: user.class,
+        section: user.section,
+        rollNo: user.rollNo
+      };
+    }
+    const session = { user: sessionUser };
 
     // Set session cookie (expires in 7 days)
     const response = NextResponse.json(session);

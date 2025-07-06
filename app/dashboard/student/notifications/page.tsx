@@ -1,46 +1,30 @@
-'use client'
+'use client';
 import React, { useEffect, useState } from 'react';
 import { BellIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
 
-interface Notification {
-  _id: string;
-  title?: string;
-  message?: string;
-  createdAt?: string;
-}
-
 const Notifications = () => {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const router = useRouter();
 
   useEffect(() => {
-    const fetchNotifications = async () => {
-      setLoading(true);
-      setError('');
-      try {
-        const res = await fetch('/api/notification');
-        if (!res.ok) throw new Error('Failed to fetch notifications');
-        const data = await res.json();
-        setNotifications(Array.isArray(data) ? data.reverse() : []);
-      } catch (err) {
-        setError('Failed to fetch notifications');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchNotifications();
+    setLoading(true);
+    fetch('/api/notification')
+      .then(res => res.json())
+      .then(data => setNotifications(data))
+      .catch(() => setError('Failed to fetch notifications'))
+      .finally(() => setLoading(false));
   }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       {/* Background Animation */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-4 -left-4 w-72 h-72 bg-yellow-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
-        <div className="absolute -top-4 -right-4 w-72 h-72 bg-orange-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-red-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+        <div className="absolute -top-4 -left-4 w-72 h-72 bg-red-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+        <div className="absolute -top-4 -right-4 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-rose-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
       </div>
 
       <div className="relative z-10 min-h-screen px-6 py-8">
@@ -59,7 +43,7 @@ const Notifications = () => {
           {/* Title Section */}
           <div className="text-center mb-8">
             <div className="mx-auto w-16 h-16 bg-white bg-opacity-20 backdrop-blur-lg rounded-2xl flex items-center justify-center mb-4 shadow-xl">
-              <div className="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-pink-600 rounded-xl flex items-center justify-center">
                 <BellIcon className="w-5 h-5 text-white" />
               </div>
             </div>
@@ -88,7 +72,7 @@ const Notifications = () => {
             </div>
           ) : (
             <div className="space-y-6">
-              {notifications.map((notification) => (
+              {notifications.map((notification: any) => (
                 <div key={notification._id} className="bg-white bg-opacity-10 backdrop-blur-xl rounded-2xl p-6 border border-white border-opacity-20 shadow-xl hover:bg-opacity-15 transition-all duration-300 transform hover:scale-[1.02]">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
@@ -96,10 +80,10 @@ const Notifications = () => {
                         {notification.title || 'Notification'}
                       </h3>
                       <div className="text-sm text-gray-300 bg-white bg-opacity-5 rounded-lg p-3 whitespace-pre-line">
-                        {notification.message || ''}
+                        {notification.message}
                       </div>
                     </div>
-                    <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center ml-4">
+                    <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-r from-red-500 to-pink-600 rounded-lg flex items-center justify-center ml-4">
                       <BellIcon className="w-4 h-4 text-white" />
                     </div>
                   </div>

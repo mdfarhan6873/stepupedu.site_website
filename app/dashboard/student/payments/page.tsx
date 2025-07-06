@@ -1,6 +1,6 @@
-'use client'
+'use client';
 import React, { useEffect, useState } from 'react';
-import { CurrencyRupeeIcon, CalendarIcon, CreditCardIcon, ArrowLeftIcon, UserIcon } from '@heroicons/react/24/outline';
+import { CreditCardIcon, ArrowLeftIcon, CalendarIcon, CurrencyRupeeIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
 
 const Payments = () => {
@@ -10,35 +10,32 @@ const Payments = () => {
   const router = useRouter();
 
   useEffect(() => {
-    const fetchPayments = async () => {
-      setLoading(true);
-      setError('');
-      try {
-        const res = await fetch('/api/teacher-payment');
-        const data = await res.json();
-        setPayments(data.filter((p: any) => p.mobileNo === (typeof window !== 'undefined' ? getTeacherMobile() : '')));
-      } catch (err) {
-        setError('Failed to fetch payments');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchPayments();
-  }, []);
-
-  // Helper to get logged-in teacher's mobile from cookie/session
-  function getTeacherMobile() {
-    const sessionData = document.cookie.split(';').find(cookie => cookie.trim().startsWith('session='));
-    if (sessionData) {
-      try {
-        const userData = JSON.parse(decodeURIComponent(sessionData.split('=')[1]));
-        return userData.user.mobileNo;
-      } catch {
-        return '';
-      }
+    setLoading(true);
+    // Get user info from session cookie
+    const sessionData = document.cookie
+      .split(';')
+      .find(cookie => cookie.trim().startsWith('session='));
+    if (!sessionData) {
+      setError('User not logged in');
+      setLoading(false);
+      return;
     }
-    return '';
-  }
+    let user;
+    try {
+      const userData = JSON.parse(decodeURIComponent(sessionData.split('=')[1]));
+      user = userData.user;
+    } catch {
+      setError('Invalid session');
+      setLoading(false);
+      return;
+    }
+    // Fetch filtered payments
+    fetch(`/api/student-payment?mobileNo=${encodeURIComponent(user.mobileNo)}`)
+      .then(res => res.json())
+      .then(data => setPayments(data))
+      .catch(() => setError('Failed to fetch payments'))
+      .finally(() => setLoading(false));
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -50,7 +47,7 @@ const Payments = () => {
       </div>
 
       <div className="relative z-10 min-h-screen px-6 py-8">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="flex items-center mb-8">
             <button 
@@ -66,11 +63,11 @@ const Payments = () => {
           <div className="text-center mb-8">
             <div className="mx-auto w-16 h-16 bg-white bg-opacity-20 backdrop-blur-lg rounded-2xl flex items-center justify-center mb-4 shadow-xl">
               <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
-                <CurrencyRupeeIcon className="w-5 h-5 text-white" />
+                <CreditCardIcon className="w-5 h-5 text-white" />
               </div>
             </div>
             <h2 className="text-2xl font-bold text-white mb-2">My Payments</h2>
-            <p className="text-gray-300">View your salary and payment history</p>
+            <p className="text-gray-300">View your payment history and transactions</p>
           </div>
 
           {/* Content */}
@@ -89,13 +86,13 @@ const Payments = () => {
             </div>
           ) : payments.length === 0 ? (
             <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-2xl p-8 border border-white border-opacity-20 text-center">
-              <CurrencyRupeeIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <CreditCardIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <div className="text-gray-300">No payments found.</div>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {payments.map((payment: any, i: number) => (
-                <div key={payment._id || i} className="bg-white bg-opacity-10 backdrop-blur-xl rounded-2xl p-6 border border-white border-opacity-20 shadow-xl hover:bg-opacity-15 transition-all duration-300 transform hover:scale-[1.02]">
+              {payments.map((payment: any) => (
+                <div key={payment._id} className="bg-white bg-opacity-10 backdrop-blur-xl rounded-2xl p-6 border border-white border-opacity-20 shadow-xl hover:bg-opacity-15 transition-all duration-300 transform hover:scale-[1.02]">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
@@ -103,7 +100,7 @@ const Payments = () => {
                       </div>
                       <div>
                         <h3 className="text-xl font-bold text-white">₹{payment.amount}</h3>
-                        <p className="text-sm text-gray-300">Salary Payment</p>
+                        <p className="text-sm text-gray-300">Payment</p>
                       </div>
                     </div>
                     <div className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -111,59 +108,57 @@ const Payments = () => {
                         ? 'bg-green-500 bg-opacity-20 text-green-300' 
                         : 'bg-blue-500 bg-opacity-20 text-blue-300'
                     }`}>
-                      {payment.mode}
+                      {payment.mode?.toUpperCase()}
                     </div>
                   </div>
                   
-                  <div className="space-y-3 mb-4">
-                    <div className="bg-white bg-opacity-5 rounded-lg p-3">
-                      <div className="flex items-center gap-2 mb-2">
-                        <UserIcon className="w-4 h-4 text-emerald-400" />
-                        <span className="text-sm text-gray-300">Paid To:</span>
+                  <div className="space-y-3">
+                    {(payment.description || payment.remark) && (
+                      <div className="bg-white bg-opacity-5 rounded-lg p-3">
+                        <span className="text-sm text-gray-300">Description:</span>
+                        <div className="text-sm text-white mt-1">{payment.description || payment.remark}</div>
                       </div>
-                      <span className="text-sm text-white font-medium">{payment.paidTo}</span>
-                    </div>
+                    )}
                     
                     <div className="flex justify-between">
-                      <span className="text-sm text-gray-300">Mobile:</span>
-                      <span className="text-sm text-white font-mono">{payment.mobileNo}</span>
-                    </div>
-                    
-                    <div className="bg-white bg-opacity-5 rounded-lg p-3">
-                      <div className="flex items-center gap-2 mb-2">
-                        <CalendarIcon className="w-4 h-4 text-emerald-400" />
-                        <span className="text-sm text-gray-300">Payment Month:</span>
-                      </div>
-                      <span className="text-sm text-white font-medium">{payment.month}</span>
-                    </div>
-                    
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-300">Payment Date:</span>
-                      <span className="text-sm text-white">
-                        {payment.paymentDate ? new Date(payment.paymentDate).toLocaleDateString('en-IN', {
-                          day: 'numeric',
-                          month: 'short',
-                          year: 'numeric'
-                        }) : 'N/A'}
-                      </span>
+                      <span className="text-sm text-gray-300">Paid By:</span>
+                      <span className="text-sm text-white">{payment.paidBy || 'N/A'}</span>
                     </div>
                     
                     {payment.utrNo && (
                       <div className="bg-white bg-opacity-5 rounded-lg p-3">
-                        <div className="flex items-center gap-2 mb-2">
-                          <CreditCardIcon className="w-4 h-4 text-green-400" />
-                          <span className="text-sm text-gray-300">UTR Number:</span>
-                        </div>
-                        <span className="text-sm text-white font-mono">{payment.utrNo}</span>
+                        <span className="text-sm text-gray-300">UTR/Txn No:</span>
+                        <div className="text-sm text-white font-mono mt-1">{payment.utrNo}</div>
                       </div>
                     )}
                     
-                    {payment.remark && payment.remark !== '-' && (
-                      <div className="bg-white bg-opacity-5 rounded-lg p-3">
-                        <span className="text-sm text-gray-300">Remark:</span>
-                        <div className="text-sm text-white mt-1">{payment.remark}</div>
+                    <div className="bg-white bg-opacity-5 rounded-lg p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CalendarIcon className="w-4 h-4 text-emerald-400" />
+                        <span className="text-sm text-gray-300">Payment Date:</span>
                       </div>
-                    )}
+                      <span className="text-sm text-white">
+                        {payment.paymentDate ? new Date(payment.paymentDate).toLocaleDateString('en-IN', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric'
+                        }) : (payment.date ? new Date(payment.date).toLocaleDateString('en-IN', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric'
+                        }) : 'N/A')}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="text-xs text-gray-400 mt-4 pt-4 border-t border-white border-opacity-10">
+                    Created: {payment.createdAt ? new Date(payment.createdAt).toLocaleDateString('en-IN', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    }) : 'N/A'}
                   </div>
                 </div>
               ))}

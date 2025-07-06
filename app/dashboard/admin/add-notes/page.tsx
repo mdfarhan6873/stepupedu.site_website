@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { DocumentTextIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
 
 export default function AddNotes() {
   const [loading, setLoading] = useState(false);
@@ -32,26 +33,109 @@ export default function AddNotes() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto bg-white p-8 rounded shadow">
-      <button onClick={() => router.back()} className="mb-4 text-blue-600 hover:underline">&larr; Back</button>
-      <h2 className="text-xl font-bold mb-6">Add Notes</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium">Title</label>
-          <input name="title" required className="input" />
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      {/* Background Animation */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-4 -left-4 w-72 h-72 bg-violet-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+        <div className="absolute -top-4 -right-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+      </div>
+
+      <div className="relative z-10 min-h-screen px-6 py-8">
+        <div className="max-w-2xl mx-auto">
+          {/* Header */}
+          <div className="flex items-center mb-8">
+            <button 
+              onClick={() => router.back()} 
+              className="flex items-center gap-2 bg-white bg-opacity-10 backdrop-blur-lg rounded-xl px-4 py-2 text-white hover:bg-opacity-20 transition-all duration-300 border border-white border-opacity-20"
+            >
+              <ArrowLeftIcon className="h-4 w-4" />
+              Back
+            </button>
+          </div>
+
+          {/* Title Section */}
+          <div className="text-center mb-8">
+            <div className="mx-auto w-16 h-16 bg-white bg-opacity-20 backdrop-blur-lg rounded-2xl flex items-center justify-center mb-4 shadow-xl">
+              <div className="w-10 h-10 bg-gradient-to-r from-violet-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <DocumentTextIcon className="w-5 h-5 text-white" />
+              </div>
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-2">Add Notes</h2>
+            <p className="text-gray-300">Create educational notes for students</p>
+          </div>
+
+          {/* Form Card */}
+          <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-3xl p-8 border border-white border-opacity-20 shadow-xl">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-white mb-2">Title</label>
+                <input 
+                  name="title" 
+                  required 
+                  className="w-full px-4 py-3 bg-white bg-opacity-10 backdrop-blur-lg border border-white border-opacity-20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300"
+                  placeholder="Enter note title"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-white mb-2">Message</label>
+                <textarea 
+                  name="message" 
+                  required 
+                  rows={6}
+                  className="w-full px-4 py-3 bg-white bg-opacity-10 backdrop-blur-lg border border-white border-opacity-20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 resize-none"
+                  placeholder="Enter note content"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-white mb-2">URL (optional)</label>
+                <input 
+                  name="url" 
+                  type="url"
+                  className="w-full px-4 py-3 bg-white bg-opacity-10 backdrop-blur-lg border border-white border-opacity-20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300"
+                  placeholder="https://example.com (optional)"
+                />
+              </div>
+              
+              <button 
+                type="submit" 
+                disabled={loading} 
+                className="w-full bg-gradient-to-r from-violet-500 to-purple-600 text-white py-4 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Creating...
+                  </div>
+                ) : (
+                  "Add Note"
+                )}
+              </button>
+            </form>
+          </div>
         </div>
-        <div>
-          <label className="block text-sm font-medium">Message</label>
-          <textarea name="message" required className="input h-24" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium">URL (optional)</label>
-          <input name="url" className="input" />
-        </div>
-        <button type="submit" disabled={loading} className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 font-semibold">
-          {loading ? "Creating..." : "Add Note"}
-        </button>
-      </form>
+      </div>
+
+      {/* Custom Styles */}
+      <style jsx>{`
+        @keyframes blob {
+          0% { transform: translate(0px, 0px) scale(1); }
+          33% { transform: translate(30px, -50px) scale(1.1); }
+          66% { transform: translate(-20px, 20px) scale(0.9); }
+          100% { transform: translate(0px, 0px) scale(1); }
+        }
+        .animate-blob {
+          animation: blob 7s infinite;
+        }
+        .animation-delay-2000 {
+          animation-delay: 2s;
+        }
+        .animation-delay-4000 {
+          animation-delay: 4s;
+        }
+      `}</style>
     </div>
   );
 }

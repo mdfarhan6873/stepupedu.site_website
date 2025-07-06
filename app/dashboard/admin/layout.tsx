@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { BellIcon } from '@heroicons/react/24/outline';
+import { BellIcon, ArrowRightOnRectangleIcon, UserIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
 
 interface User {
   id: string;
@@ -13,6 +13,7 @@ interface User {
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -41,54 +42,122 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     router.push('/login');
   };
 
-  if (loading) return <div>Loading...</div>;
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showUserMenu) {
+        setShowUserMenu(false);
+      }
+    };
+
+    if (showUserMenu) {
+      document.addEventListener('click', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [showUserMenu]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+        <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-3xl p-8 border border-white border-opacity-20">
+          <div className="flex items-center justify-center space-x-3">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+            <span className="text-white text-lg font-medium">Loading...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-100 relative">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
-          <div className="flex items-center space-x-4">
-            <span className="font-semibold text-lg">{user?.name || 'Admin'}</span>
-            <span className="text-xs text-gray-500">({user?.role})</span>
-          </div>
-          <div className="flex items-center space-x-4">
-            <button className="relative p-2 rounded-full hover:bg-gray-100 focus:outline-none">
-              <BellIcon className="h-6 w-6 text-gray-600" />
-            </button>
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              Logout
-            </button>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      {/* Background Animation */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-4 -left-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+        <div className="absolute -top-4 -right-4 w-72 h-72 bg-yellow-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+      </div>
+
+      {/* Header */}
+      <header className="relative z-50 bg-white bg-opacity-10 backdrop-blur-xl border-b border-white border-opacity-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
+                <ShieldCheckIcon className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <span className="font-semibold text-lg text-white">{user?.name || 'Admin'}</span>
+                <div className="flex items-center space-x-2">
+                  <span className="text-xs text-gray-300 bg-white bg-opacity-20 px-2 py-0.5 rounded-full">{user?.role}</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <button className="relative p-2 rounded-xl bg-white bg-opacity-10 hover:bg-opacity-20 transition-all duration-300 backdrop-blur-lg border border-white border-opacity-20">
+                <BellIcon className="h-5 w-5 text-gray-300" />
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
+              </button>
+              <div className="relative z-50">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowUserMenu(!showUserMenu);
+                  }}
+                  className="flex items-center space-x-2 p-2 rounded-xl bg-white bg-opacity-10 hover:bg-opacity-20 transition-all duration-300 backdrop-blur-lg border border-white border-opacity-20"
+                >
+                  <UserIcon className="h-5 w-5 text-gray-300" />
+                  <svg className={`h-4 w-4 text-gray-300 transition-transform duration-300 ${showUserMenu ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {showUserMenu && (
+                  <div className="absolute right-0 top-full mt-2 w-48 bg-white bg-opacity-10 backdrop-blur-xl rounded-2xl border border-white border-opacity-20 shadow-2xl overflow-hidden z-50">
+                    <div className="p-3 border-b border-white border-opacity-20">
+                      <p className="text-white font-medium">{user?.name}</p>
+                      <p className="text-gray-300 text-sm">{user?.mobileNo}</p>
+                    </div>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-white hover:bg-opacity-10 transition-colors duration-300 text-white"
+                    >
+                      <ArrowRightOnRectangleIcon className="h-5 w-5 text-red-400" />
+                      <span>Logout</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </header>
-      <main className="py-10 pb-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {children}
-        </div>
+
+      {/* Main Content */}
+      <main className="relative z-10">
+        {children}
       </main>
-      {/* Bottom Navigation for Mobile - visible on all admin routes */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around items-center h-16 z-40 shadow-md w-full max-w-5xl mx-auto px-2">
-        <a href="/dashboard/admin" className="flex flex-col items-center focus:outline-none text-blue-600">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-7 w-7">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125h3.375v-4.5c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125v4.5h3.375c.621 0 1.125-.504 1.125-1.125V9.75" />
-          </svg>
-          <span className="text-xs">Home</span>
-        </a>
-        <a href="/dashboard/admin/add-student" className="flex flex-col items-center text-blue-600 focus:outline-none">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-12 w-12 -mt-4">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-          </svg>
-        </a>
-        <a href="/dashboard/admin/view/notifications" className="flex flex-col items-center focus:outline-none text-gray-400 hover:text-blue-600">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-7 w-7">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75l1.5-1.5M21.75 18.75l-1.5-1.5M12 3v1.5m0 15V21m8.25-9h-1.5m-13.5 0h-1.5m15.364-6.364l-1.06 1.06M6.364 4.636l1.06 1.06" />
-          </svg>
-          <span className="text-xs">Notifications</span>
-        </a>
-      </nav>
+
+      {/* Custom Styles */}
+      <style jsx>{`
+        @keyframes blob {
+          0% { transform: translate(0px, 0px) scale(1); }
+          33% { transform: translate(30px, -50px) scale(1.1); }
+          66% { transform: translate(-20px, 20px) scale(0.9); }
+          100% { transform: translate(0px, 0px) scale(1); }
+        }
+        .animate-blob {
+          animation: blob 7s infinite;
+        }
+        .animation-delay-2000 {
+          animation-delay: 2s;
+        }
+        .animation-delay-4000 {
+          animation-delay: 4s;
+        }
+      `}</style>
     </div>
   );
 }

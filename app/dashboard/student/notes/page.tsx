@@ -1,46 +1,30 @@
-'use client'
+'use client';
 import React, { useEffect, useState } from 'react';
-import { BellIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
+import { DocumentTextIcon, ArrowLeftIcon, LinkIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
 
-interface Notification {
-  _id: string;
-  title?: string;
-  message?: string;
-  createdAt?: string;
-}
-
-const Notifications = () => {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+const Notes = () => {
+  const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const router = useRouter();
 
   useEffect(() => {
-    const fetchNotifications = async () => {
-      setLoading(true);
-      setError('');
-      try {
-        const res = await fetch('/api/notification');
-        if (!res.ok) throw new Error('Failed to fetch notifications');
-        const data = await res.json();
-        setNotifications(Array.isArray(data) ? data.reverse() : []);
-      } catch (err) {
-        setError('Failed to fetch notifications');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchNotifications();
+    setLoading(true);
+    fetch('/api/notes')
+      .then(res => res.json())
+      .then(data => setNotes(data))
+      .catch(() => setError('Failed to fetch notes'))
+      .finally(() => setLoading(false));
   }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       {/* Background Animation */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-4 -left-4 w-72 h-72 bg-yellow-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
-        <div className="absolute -top-4 -right-4 w-72 h-72 bg-orange-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-red-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+        <div className="absolute -top-4 -left-4 w-72 h-72 bg-violet-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+        <div className="absolute -top-4 -right-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
       </div>
 
       <div className="relative z-10 min-h-screen px-6 py-8">
@@ -59,12 +43,12 @@ const Notifications = () => {
           {/* Title Section */}
           <div className="text-center mb-8">
             <div className="mx-auto w-16 h-16 bg-white bg-opacity-20 backdrop-blur-lg rounded-2xl flex items-center justify-center mb-4 shadow-xl">
-              <div className="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center">
-                <BellIcon className="w-5 h-5 text-white" />
+              <div className="w-10 h-10 bg-gradient-to-r from-violet-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <DocumentTextIcon className="w-5 h-5 text-white" />
               </div>
             </div>
-            <h2 className="text-2xl font-bold text-white mb-2">Notifications</h2>
-            <p className="text-gray-300">Stay updated with important announcements</p>
+            <h2 className="text-2xl font-bold text-white mb-2">Notes</h2>
+            <p className="text-gray-300">Access your educational notes and materials</p>
           </div>
 
           {/* Content */}
@@ -73,7 +57,7 @@ const Notifications = () => {
               <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-2xl p-8 border border-white border-opacity-20">
                 <div className="flex items-center gap-3 text-white">
                   <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Loading notifications...
+                  Loading notes...
                 </div>
               </div>
             </div>
@@ -81,31 +65,45 @@ const Notifications = () => {
             <div className="bg-red-500 bg-opacity-20 backdrop-blur-xl rounded-2xl p-8 border border-red-500 border-opacity-30 text-center">
               <div className="text-red-300">{error}</div>
             </div>
-          ) : notifications.length === 0 ? (
+          ) : notes.length === 0 ? (
             <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-2xl p-8 border border-white border-opacity-20 text-center">
-              <BellIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <div className="text-gray-300">No notifications found.</div>
+              <DocumentTextIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <div className="text-gray-300">No notes found.</div>
             </div>
           ) : (
-            <div className="space-y-6">
-              {notifications.map((notification) => (
-                <div key={notification._id} className="bg-white bg-opacity-10 backdrop-blur-xl rounded-2xl p-6 border border-white border-opacity-20 shadow-xl hover:bg-opacity-15 transition-all duration-300 transform hover:scale-[1.02]">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {notes.map((note: any) => (
+                <div key={note._id} className="bg-white bg-opacity-10 backdrop-blur-xl rounded-2xl p-6 border border-white border-opacity-20 shadow-xl hover:bg-opacity-15 transition-all duration-300 transform hover:scale-[1.02]">
                   <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-white mb-2">
-                        {notification.title || 'Notification'}
-                      </h3>
-                      <div className="text-sm text-gray-300 bg-white bg-opacity-5 rounded-lg p-3 whitespace-pre-line">
-                        {notification.message || ''}
-                      </div>
-                    </div>
-                    <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center ml-4">
-                      <BellIcon className="w-4 h-4 text-white" />
+                    <h3 className="text-lg font-semibold text-white pr-2">{note.title}</h3>
+                    <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-r from-violet-500 to-purple-600 rounded-lg flex items-center justify-center">
+                      <DocumentTextIcon className="w-4 h-4 text-white" />
                     </div>
                   </div>
                   
+                  <div className="text-sm text-gray-300 bg-white bg-opacity-5 rounded-lg p-3 mb-4 whitespace-pre-line">
+                    {note.message}
+                  </div>
+                  
+                  {note.url && (
+                    <div className="mb-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <LinkIcon className="w-4 h-4 text-violet-400" />
+                        <span className="text-sm text-gray-300">Attachment:</span>
+                      </div>
+                      <a 
+                        href={note.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-sm text-blue-300 hover:text-blue-200 underline break-all bg-white bg-opacity-5 rounded-lg p-2 block transition-colors duration-300"
+                      >
+                        {note.url}
+                      </a>
+                    </div>
+                  )}
+                  
                   <div className="text-xs text-gray-400 pt-4 border-t border-white border-opacity-10">
-                    {notification.createdAt ? new Date(notification.createdAt).toLocaleDateString('en-IN', {
+                    {note.createdAt ? new Date(note.createdAt).toLocaleDateString('en-IN', {
                       day: 'numeric',
                       month: 'long',
                       year: 'numeric',
@@ -142,4 +140,4 @@ const Notifications = () => {
   );
 };
 
-export default Notifications;
+export default Notes;

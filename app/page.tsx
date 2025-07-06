@@ -36,8 +36,6 @@ const Home = () => {
       setCurrentImage((prev) => (prev + 1) % images.length)
     }, 3000) // Change image every 3 seconds
 
-    setTimeout(() => setShowAppPopup(true), 1200)
-
     return () => {
       clearInterval(timer)
     }
@@ -154,6 +152,19 @@ const Home = () => {
           </footer>
         </div>
       </main>
+
+      {/* Download App Button */}
+      <button
+        onClick={() => setShowAppPopup(true)}
+        className="fixed bottom-6 right-6 z-40 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-full shadow-lg p-3 hover:scale-110 transition-all duration-300 flex items-center gap-2"
+        style={{ boxShadow: '0 4px 24px 0 rgba(80,0,120,0.15)' }}
+        aria-label="Download App"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4m-7 7h10" />
+        </svg>
+        <span className="hidden sm:inline text-sm font-semibold">Download App</span>
+      </button>
 
       {/* Custom Styles */}
       <style jsx>{`

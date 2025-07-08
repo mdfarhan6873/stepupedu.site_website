@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { UserPlusIcon, PlusCircleIcon, ChatBubbleLeftRightIcon, HomeIcon, CurrencyRupeeIcon, DocumentTextIcon, BellIcon } from '@heroicons/react/24/outline';
 import { UserGroupIcon, AcademicCapIcon, CalendarDaysIcon, ChartBarIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
+import axios from 'axios';
 
 const Admin = () => {
   const [showAddPopup, setShowAddPopup] = useState(false);
@@ -12,11 +13,46 @@ const Admin = () => {
   const [filter, setFilter] = useState('');
   const [loading, setLoading] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [stats, setStats] = useState({
+    students: 0,
+    teachers: 0,
+    revenue: 0,
+  });
   const router = useRouter();
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const [studentsRes, teachersRes, studentPaymentsRes, teacherPaymentsRes] = await Promise.all([
+          axios.get('/api/users/student'),
+          axios.get('/api/users/teacher'),
+          axios.get('/api/student-payment'),
+          axios.get('/api/teacher-payment'),
+        ]);
+        const students = studentsRes.data?.length || 0;
+        const teachers = teachersRes.data?.length || 0;
+        const studentPayments = Array.isArray(studentPaymentsRes.data)
+          ? studentPaymentsRes.data.reduce((sum, p) => sum + (p.amount || 0), 0)
+          : 0;
+        const teacherPayments = Array.isArray(teacherPaymentsRes.data)
+          ? teacherPaymentsRes.data.reduce((sum, p) => sum + (p.amount || 0), 0)
+          : 0;
+        setStats({
+          students,
+          teachers,
+          revenue: studentPayments - teacherPayments,
+        });
+      } catch (err) {
+        // fallback to 0s
+        setStats({ students: 0, teachers: 0, revenue: 0 });
+      }
+    };
+    fetchStats();
   }, []);
 
   const quickActions = [
@@ -88,7 +124,7 @@ const Admin = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-300 text-xs font-medium">Total Students</p>
-                <p className="text-2xl font-bold text-white">324</p>
+                <p className="text-2xl font-bold text-white">{stats.students}</p>
               </div>
               <UserGroupIcon className="h-8 w-8 text-blue-400" />
             </div>
@@ -97,7 +133,7 @@ const Admin = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-300 text-xs font-medium">Total Teachers</p>
-                <p className="text-2xl font-bold text-white">18</p>
+                <p className="text-2xl font-bold text-white">{stats.teachers}</p>
               </div>
               <AcademicCapIcon className="h-8 w-8 text-emerald-400" />
             </div>
@@ -115,7 +151,7 @@ const Admin = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-300 text-xs font-medium">This Month</p>
-                <p className="text-2xl font-bold text-white">₹45k</p>
+                <p className="text-2xl font-bold text-white">₹{stats.revenue.toLocaleString()}</p>
               </div>
               <ChartBarIcon className="h-8 w-8 text-pink-400" />
             </div>

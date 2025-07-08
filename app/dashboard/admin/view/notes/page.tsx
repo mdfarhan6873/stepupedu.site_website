@@ -1,11 +1,15 @@
 "use client";
 import { useEffect, useState } from "react";
 import { DocumentTextIcon, MagnifyingGlassIcon, ClipboardDocumentIcon, LinkIcon } from "@heroicons/react/24/outline";
+import React from "react";
 
 export default function ViewNotes() {
   const [notes, setNotes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState({ title: '', content: '' });
+  const [selected, setSelected] = useState<any | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [form, setForm] = useState({ title: '', content: '' });
 
   useEffect(() => {
     fetch("/api/notes")
@@ -24,6 +28,42 @@ export default function ViewNotes() {
   for (let i = 0; i < filtered.length; i += groupSize) {
     grouped.push(filtered.slice(i, i + groupSize));
   }
+
+  const handleEdit = (note: any) => {
+    setSelected(note);
+    setForm({ title: note.title, content: note.content });
+    setShowModal(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Delete this note?')) return;
+    await fetch('/api/notes', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+    setNotes(notes.filter(n => n._id !== id));
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selected) return;
+    await fetch('/api/notes', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: selected._id, ...form }),
+    });
+    setShowModal(false);
+    setSelected(null);
+    // Refresh notes
+    fetch("/api/notes")
+      .then(res => res.json())
+      .then(data => setNotes(data));
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -94,6 +134,10 @@ export default function ViewNotes() {
                     <div key={idx} className="bg-white bg-opacity-10 backdrop-blur-xl rounded-2xl p-6 border border-white border-opacity-20 shadow-xl hover:bg-opacity-15 transition-all duration-300 transform hover:scale-[1.02]">
                       <div className="flex items-start justify-between mb-4">
                         <h3 className="text-lg font-semibold text-white pr-2">{note.title}</h3>
+                        <div className="flex flex-col gap-1">
+                          <button className="text-xs text-blue-400 hover:underline" onClick={() => handleEdit(note)}>Edit</button>
+                          <button className="text-xs text-red-400 hover:underline" onClick={() => handleDelete(note._id)}>Delete</button>
+                        </div>
                         <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-r from-violet-500 to-purple-600 rounded-lg flex items-center justify-center">
                           <DocumentTextIcon className="w-4 h-4 text-white" />
                         </div>
@@ -150,6 +194,23 @@ export default function ViewNotes() {
           )}
         </div>
       </div>
+
+      {/* Edit Modal */}
+      {showModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
+          <div className="bg-white p-6 rounded shadow-lg min-w-[300px]">
+            <h3 className="text-lg font-bold mb-2">Edit Note</h3>
+            <form onSubmit={handleSubmit}>
+              <input className="border p-1 mb-2 w-full" name="title" value={form.title} onChange={handleChange} placeholder="Title" required />
+              <textarea className="border p-1 mb-2 w-full" name="content" value={form.content} onChange={handleChange} placeholder="Content" required />
+              <div className="flex justify-end gap-2 mt-2">
+                <button type="button" className="px-3 py-1 bg-gray-300 rounded" onClick={() => setShowModal(false)}>Cancel</button>
+                <button type="submit" className="px-3 py-1 bg-blue-600 text-white rounded">Save</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Custom Styles */}
       <style jsx>{`

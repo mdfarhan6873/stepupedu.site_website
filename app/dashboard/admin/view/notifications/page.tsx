@@ -1,11 +1,15 @@
 "use client";
 import { useEffect, useState } from "react";
 import { BellIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import React from "react";
 
 export default function ViewNotifications() {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState({ title: '', message: '' });
+  const [selected, setSelected] = useState<any | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [form, setForm] = useState({ title: '', message: '' });
 
   useEffect(() => {
     fetch("/api/notification")
@@ -24,6 +28,42 @@ export default function ViewNotifications() {
   for (let i = 0; i < filtered.length; i += groupSize) {
     grouped.push(filtered.slice(i, i + groupSize));
   }
+
+  const handleEdit = (notification: any) => {
+    setSelected(notification);
+    setForm({ title: notification.title, message: notification.message });
+    setShowModal(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Delete this notification?')) return;
+    await fetch('/api/notification', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+    setNotifications(notifications.filter(n => n._id !== id));
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selected) return;
+    await fetch('/api/notification', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: selected._id, ...form }),
+    });
+    setShowModal(false);
+    setSelected(null);
+    // Refresh notifications
+    fetch("/api/notification")
+      .then(res => res.json())
+      .then(data => setNotifications(data));
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -94,6 +134,10 @@ export default function ViewNotifications() {
                     <div key={idx} className="bg-white bg-opacity-10 backdrop-blur-xl rounded-2xl p-6 border border-white border-opacity-20 shadow-xl hover:bg-opacity-15 transition-all duration-300 transform hover:scale-[1.02]">
                       <div className="flex items-start justify-between mb-4">
                         <h3 className="text-lg font-semibold text-white pr-2">{notification.title}</h3>
+                        <div className="flex flex-col gap-1">
+                          <button className="text-xs text-blue-400 hover:underline" onClick={() => handleEdit(notification)}>Edit</button>
+                          <button className="text-xs text-red-400 hover:underline" onClick={() => handleDelete(notification._id)}>Delete</button>
+                        </div>
                         <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center">
                           <BellIcon className="w-4 h-4 text-white" />
                         </div>
@@ -116,6 +160,23 @@ export default function ViewNotifications() {
           )}
         </div>
       </div>
+
+      {/* Edit Notification Modal */}
+      {showModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
+          <div className="bg-white p-6 rounded shadow-lg min-w-[300px]">
+            <h3 className="text-lg font-bold mb-2">Edit Notification</h3>
+            <form onSubmit={handleSubmit}>
+              <input className="border p-1 mb-2 w-full" name="title" value={form.title} onChange={handleChange} placeholder="Title" required />
+              <textarea className="border p-1 mb-2 w-full" name="message" value={form.message} onChange={handleChange} placeholder="Message" required />
+              <div className="flex justify-end gap-2 mt-2">
+                <button type="button" className="px-3 py-1 bg-gray-300 rounded" onClick={() => setShowModal(false)}>Cancel</button>
+                <button type="submit" className="px-3 py-1 bg-blue-600 text-white rounded">Save</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Custom Styles */}
       <style jsx>{`

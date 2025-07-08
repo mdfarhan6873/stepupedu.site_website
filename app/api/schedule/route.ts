@@ -22,3 +22,31 @@ export async function GET() {
     return NextResponse.json({ message: error.message || 'Failed to fetch schedules' }, { status: 500 });
   }
 }
+
+export async function PATCH(req: NextRequest) {
+  try {
+    await connectDB();
+    const { id, ...data } = await req.json();
+    const updatedSchedule = await Schedule.findByIdAndUpdate(id, data, { new: true });
+    if (!updatedSchedule) {
+      return NextResponse.json({ message: 'Schedule not found' }, { status: 404 });
+    }
+    return NextResponse.json(updatedSchedule);
+  } catch (error: any) {
+    return NextResponse.json({ message: error.message || 'Failed to update schedule' }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    await connectDB();
+    const { id } = await req.json();
+    const deletedSchedule = await Schedule.findByIdAndDelete(id);
+    if (!deletedSchedule) {
+      return NextResponse.json({ message: 'Schedule not found' }, { status: 404 });
+    }
+    return NextResponse.json({ message: 'Schedule deleted successfully' });
+  } catch (error: any) {
+    return NextResponse.json({ message: error.message || 'Failed to delete schedule' }, { status: 500 });
+  }
+}

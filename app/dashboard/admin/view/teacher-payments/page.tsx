@@ -1,11 +1,16 @@
 "use client";
 import { useEffect, useState } from "react";
-import { CurrencyRupeeIcon, MagnifyingGlassIcon, CalendarIcon, CreditCardIcon, UserIcon } from "@heroicons/react/24/outline";
+import { CurrencyRupeeIcon, MagnifyingGlassIcon, CalendarIcon, CreditCardIcon, UserIcon, PencilIcon, TrashIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 export default function ViewTeacherPayments() {
   const [payments, setPayments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState({ mobileNo: '', paidTo: '', mode: '', month: '' });
+  const [editModal, setEditModal] = useState<{ open: boolean; payment: any | null }>({ open: false, payment: null });
+  const [deleteModal, setDeleteModal] = useState<{ open: boolean; payment: any | null }>({ open: false, payment: null });
+  const [form, setForm] = useState<any>({});
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetch("/api/teacher-payment")
@@ -26,6 +31,47 @@ export default function ViewTeacherPayments() {
   for (let i = 0; i < filtered.length; i += groupSize) {
     grouped.push(filtered.slice(i, i + groupSize));
   }
+
+  // Edit handler
+  const openEdit = (payment: any) => {
+    setForm({ ...payment });
+    setEditModal({ open: true, payment });
+  };
+  const closeEdit = () => setEditModal({ open: false, payment: null });
+  const handleEditChange = (e: any) => {
+    setForm((f: any) => ({ ...f, [e.target.name]: e.target.value }));
+  };
+  const submitEdit = async () => {
+    setSaving(true);
+    // Ensure id is present in body for PATCH
+    const patchBody = { ...form, id: form._id };
+    await fetch(`/api/teacher-payment`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(patchBody),
+    });
+    // Re-fetch from backend to ensure data is up-to-date
+    fetch("/api/teacher-payment")
+      .then(res => res.json())
+      .then(data => setPayments(data));
+    setSaving(false);
+    closeEdit();
+  };
+
+  // Delete handler
+  const openDelete = (payment: any) => setDeleteModal({ open: true, payment });
+  const closeDelete = () => setDeleteModal({ open: false, payment: null });
+  const confirmDelete = async () => {
+    setDeleting(true);
+    await fetch(`/api/teacher-payment`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: deleteModal.payment._id }),
+    });
+    setPayments((prev) => prev.filter((p) => p._id !== deleteModal.payment._id));
+    setDeleting(false);
+    closeDelete();
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -176,6 +222,21 @@ export default function ViewTeacherPayments() {
                         )}
                       </div>
                       
+                      <div className="flex gap-2 mt-4">
+                        <button
+                          className="flex items-center gap-1 px-3 py-1 bg-orange-500 bg-opacity-80 hover:bg-opacity-100 text-white rounded-lg text-xs font-semibold shadow"
+                          onClick={() => openEdit(payment)}
+                        >
+                          <PencilIcon className="w-4 h-4" /> Edit
+                        </button>
+                        <button
+                          className="flex items-center gap-1 px-3 py-1 bg-red-500 bg-opacity-80 hover:bg-opacity-100 text-white rounded-lg text-xs font-semibold shadow"
+                          onClick={() => openDelete(payment)}
+                        >
+                          <TrashIcon className="w-4 h-4" /> Delete
+                        </button>
+                      </div>
+
                       <div className="text-xs text-gray-400 mt-4 pt-4 border-t border-white border-opacity-10">
                         ID: {payment._id}
                       </div>
@@ -187,6 +248,48 @@ export default function ViewTeacherPayments() {
           )}
         </div>
       </div>
+
+      {/* Edit Modal */}
+      {editModal.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-lg relative">
+            <button className="absolute top-3 right-3 text-gray-400 hover:text-gray-700" onClick={closeEdit}>
+              <XMarkIcon className="w-6 h-6" />
+            </button>
+            <h3 className="text-xl font-bold mb-4">Edit Teacher Payment</h3>
+            <div className="grid grid-cols-1 gap-4">
+              <input name="amount" value={form.amount || ""} onChange={handleEditChange} className="border rounded p-2" placeholder="Amount" />
+              <input name="paidTo" value={form.paidTo || ""} onChange={handleEditChange} className="border rounded p-2" placeholder="Paid To" />
+              <input name="mobileNo" value={form.mobileNo || ""} onChange={handleEditChange} className="border rounded p-2" placeholder="Mobile No" />
+              <input name="month" value={form.month || ""} onChange={handleEditChange} className="border rounded p-2" placeholder="Month" />
+              <input name="mode" value={form.mode || ""} onChange={handleEditChange} className="border rounded p-2" placeholder="Mode" />
+              <input name="paymentDate" value={form.paymentDate || ""} onChange={handleEditChange} className="border rounded p-2" placeholder="Payment Date" />
+              <input name="utrNo" value={form.utrNo || ""} onChange={handleEditChange} className="border rounded p-2" placeholder="UTR No" />
+              <input name="remark" value={form.remark || ""} onChange={handleEditChange} className="border rounded p-2" placeholder="Remark" />
+            </div>
+            <div className="flex gap-2 mt-6">
+              <button className="px-4 py-2 bg-orange-600 text-white rounded-lg font-semibold" onClick={submitEdit} disabled={saving}>{saving ? "Saving..." : "Save Changes"}</button>
+              <button className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold" onClick={closeEdit}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Delete Modal */}
+      {deleteModal.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md relative">
+            <button className="absolute top-3 right-3 text-gray-400 hover:text-gray-700" onClick={closeDelete}>
+              <XMarkIcon className="w-6 h-6" />
+            </button>
+            <h3 className="text-xl font-bold mb-4">Delete Teacher Payment</h3>
+            <p>Are you sure you want to delete payment to <span className="font-semibold">{deleteModal.payment?.paidTo}</span>?</p>
+            <div className="flex gap-2 mt-6">
+              <button className="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold" onClick={confirmDelete} disabled={deleting}>{deleting ? "Deleting..." : "Delete"}</button>
+              <button className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold" onClick={closeDelete}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Custom Styles */}
       <style jsx>{`

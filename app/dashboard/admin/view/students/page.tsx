@@ -1,11 +1,16 @@
 "use client";
 import { useEffect, useState } from "react";
-import { UserGroupIcon, MagnifyingGlassIcon, ClipboardDocumentIcon, PhoneIcon } from "@heroicons/react/24/outline";
+import { UserGroupIcon, MagnifyingGlassIcon, ClipboardDocumentIcon, PhoneIcon, PencilIcon, TrashIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 export default function ViewStudents() {
   const [students, setStudents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState({ class: '', name: '', mobileNo: '' });
+  const [editModal, setEditModal] = useState<{ open: boolean; student: any | null }>({ open: false, student: null });
+  const [deleteModal, setDeleteModal] = useState<{ open: boolean; student: any | null }>({ open: false, student: null });
+  const [form, setForm] = useState<any>({});
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetch("/api/users/student")
@@ -25,6 +30,47 @@ export default function ViewStudents() {
   for (let i = 0; i < filtered.length; i += groupSize) {
     grouped.push(filtered.slice(i, i + groupSize));
   }
+
+  // Edit handler
+  const openEdit = (student: any) => {
+    setForm({ ...student });
+    setEditModal({ open: true, student });
+  };
+  const closeEdit = () => setEditModal({ open: false, student: null });
+  const handleEditChange = (e: any) => {
+    setForm((f: any) => ({ ...f, [e.target.name]: e.target.value }));
+  };
+  const submitEdit = async () => {
+    setSaving(true);
+    // Ensure id is present in body for PATCH
+    const patchBody = { ...form, id: form._id };
+    await fetch(`/api/users/student`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(patchBody),
+    });
+    // Re-fetch from backend to ensure data is up-to-date
+    fetch("/api/users/student")
+      .then(res => res.json())
+      .then(data => setStudents(data));
+    setSaving(false);
+    closeEdit();
+  };
+
+  // Delete handler
+  const openDelete = (student: any) => setDeleteModal({ open: true, student });
+  const closeDelete = () => setDeleteModal({ open: false, student: null });
+  const confirmDelete = async () => {
+    setDeleting(true);
+    await fetch(`/api/users/student`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: deleteModal.student._id }),
+    });
+    setStudents((prev) => prev.filter((s) => s._id !== deleteModal.student._id));
+    setDeleting(false);
+    closeDelete();
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -179,8 +225,19 @@ export default function ViewStudents() {
                         </div>
                       </div>
                       
-                      <div className="text-xs text-gray-400 mt-4 pt-4 border-t border-white border-opacity-10">
-                        ID: {student._id}
+                      <div className="flex gap-2 mt-4">
+                        <button
+                          className="flex items-center gap-1 px-3 py-1 bg-blue-500 bg-opacity-80 hover:bg-opacity-100 text-white rounded-lg text-xs font-semibold shadow"
+                          onClick={() => openEdit(student)}
+                        >
+                          <PencilIcon className="w-4 h-4" /> Edit
+                        </button>
+                        <button
+                          className="flex items-center gap-1 px-3 py-1 bg-red-500 bg-opacity-80 hover:bg-opacity-100 text-white rounded-lg text-xs font-semibold shadow"
+                          onClick={() => openDelete(student)}
+                        >
+                          <TrashIcon className="w-4 h-4" /> Delete
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -190,6 +247,49 @@ export default function ViewStudents() {
           )}
         </div>
       </div>
+
+      {/* Edit Modal */}
+      {editModal.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-lg relative">
+            <button className="absolute top-3 right-3 text-gray-400 hover:text-gray-700" onClick={closeEdit}>
+              <XMarkIcon className="w-6 h-6" />
+            </button>
+            <h3 className="text-xl font-bold mb-4">Edit Student</h3>
+            <div className="grid grid-cols-1 gap-4">
+              <input name="name" value={form.name || ""} onChange={handleEditChange} className="border rounded p-2" placeholder="Name" />
+              <input name="rollNo" value={form.rollNo || ""} onChange={handleEditChange} className="border rounded p-2" placeholder="Roll No" />
+              <input name="class" value={form.class || ""} onChange={handleEditChange} className="border rounded p-2" placeholder="Class" />
+              <input name="section" value={form.section || ""} onChange={handleEditChange} className="border rounded p-2" placeholder="Section" />
+              <input name="mobileNo" value={form.mobileNo || ""} onChange={handleEditChange} className="border rounded p-2" placeholder="Mobile No" />
+              <input name="parentName" value={form.parentName || ""} onChange={handleEditChange} className="border rounded p-2" placeholder="Parent Name" />
+              <input name="parentMobileNo" value={form.parentMobileNo || ""} onChange={handleEditChange} className="border rounded p-2" placeholder="Parent Mobile No" />
+              <input name="address" value={form.address || ""} onChange={handleEditChange} className="border rounded p-2" placeholder="Address" />
+              <input name="password" value={form.password || ""} onChange={handleEditChange} className="border rounded p-2" placeholder="Password" />
+            </div>
+            <div className="flex gap-2 mt-6">
+              <button className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold" onClick={submitEdit} disabled={saving}>{saving ? "Saving..." : "Save Changes"}</button>
+              <button className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold" onClick={closeEdit}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Delete Modal */}
+      {deleteModal.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md relative">
+            <button className="absolute top-3 right-3 text-gray-400 hover:text-gray-700" onClick={closeDelete}>
+              <XMarkIcon className="w-6 h-6" />
+            </button>
+            <h3 className="text-xl font-bold mb-4">Delete Student</h3>
+            <p>Are you sure you want to delete <span className="font-semibold">{deleteModal.student?.name}</span>?</p>
+            <div className="flex gap-2 mt-6">
+              <button className="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold" onClick={confirmDelete} disabled={deleting}>{deleting ? "Deleting..." : "Delete"}</button>
+              <button className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold" onClick={closeDelete}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Custom Styles */}
       <style jsx>{`

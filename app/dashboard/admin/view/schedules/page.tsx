@@ -1,11 +1,16 @@
 "use client";
 import { useEffect, useState } from "react";
 import { CalendarDaysIcon, MagnifyingGlassIcon, ClockIcon } from "@heroicons/react/24/outline";
+import React from "react";
 
 export default function ViewSchedules() {
   const [schedules, setSchedules] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState({ class: '', section: '', day: '', subject: '' });
+  const [selected, setSelected] = useState<any | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  // Always include week in form state
+  const [form, setForm] = useState<{ class: string; section: string; week: any[] }>({ class: '', section: '', week: [] });
 
   useEffect(() => {
     fetch("/api/schedule")
@@ -26,6 +31,90 @@ export default function ViewSchedules() {
   for (let i = 0; i < filtered.length; i += groupSize) {
     grouped.push(filtered.slice(i, i + groupSize));
   }
+
+  const handleEdit = (schedule: any) => {
+    setSelected(schedule);
+    setForm({
+      class: schedule.class,
+      section: schedule.section,
+      week: schedule.week ? JSON.parse(JSON.stringify(schedule.week)) : [], // deep copy
+    });
+    setShowModal(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Delete this schedule?')) return;
+    await fetch('/api/schedule', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+    setSchedules(schedules.filter(s => s._id !== id));
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleWeekChange = (dayIdx: number, periodIdx: number, field: string, value: string) => {
+    setForm((prev: any) => {
+      const week = [...prev.week];
+      const periods = [...week[dayIdx].periods];
+      periods[periodIdx] = { ...periods[periodIdx], [field]: value };
+      week[dayIdx] = { ...week[dayIdx], periods };
+      return { ...prev, week };
+    });
+  };
+  const handleDayChange = (dayIdx: number, value: string) => {
+    setForm((prev: any) => {
+      const week = [...prev.week];
+      week[dayIdx] = { ...week[dayIdx], day: value };
+      return { ...prev, week };
+    });
+  };
+  const addPeriod = (dayIdx: number) => {
+    setForm((prev: any) => {
+      const week = [...prev.week];
+      week[dayIdx].periods.push({ subject: '', startTime: '', endTime: '', teacherName: '' });
+      return { ...prev, week };
+    });
+  };
+  const removePeriod = (dayIdx: number, periodIdx: number) => {
+    setForm((prev: any) => {
+      const week = [...prev.week];
+      week[dayIdx].periods.splice(periodIdx, 1);
+      return { ...prev, week };
+    });
+  };
+  const addDay = () => {
+    setForm((prev: any) => ({
+      ...prev,
+      week: [...(prev.week || []), { day: '', periods: [] }],
+    }));
+  };
+  const removeDay = (dayIdx: number) => {
+    setForm((prev: any) => {
+      const week = [...prev.week];
+      week.splice(dayIdx, 1);
+      return { ...prev, week };
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selected) return;
+    await fetch('/api/schedule', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: selected._id, ...form }),
+    });
+    setShowModal(false);
+    setSelected(null);
+    // Refresh schedules
+    fetch("/api/schedule")
+      .then(res => res.json())
+      .then(data => setSchedules(data));
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -111,6 +200,10 @@ export default function ViewSchedules() {
                           <h3 className="text-lg font-semibold text-white">Class {schedule.class}</h3>
                           <p className="text-sm text-gray-300">Section: {schedule.section}</p>
                         </div>
+                        <div className="flex flex-col gap-1">
+                          <button className="text-xs text-blue-400 hover:underline" onClick={() => handleEdit(schedule)}>Edit</button>
+                          <button className="text-xs text-red-400 hover:underline" onClick={() => handleDelete(schedule._id)}>Delete</button>
+                        </div>
                         <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
                           <CalendarDaysIcon className="w-4 h-4 text-white" />
                         </div>
@@ -156,6 +249,49 @@ export default function ViewSchedules() {
           )}
         </div>
       </div>
+
+      {/* Edit Schedule Modal */}
+      {showModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
+          <div className="bg-white p-6 rounded shadow-lg min-w-[350px] max-w-2xl w-full">
+            <h3 className="text-lg font-bold mb-2">Edit Schedule</h3>
+            <form onSubmit={handleSubmit}>
+              <input className="border p-1 mb-2 w-full" name="class" value={form.class} onChange={handleChange} placeholder="Class" required />
+              <input className="border p-1 mb-2 w-full" name="section" value={form.section} onChange={handleChange} placeholder="Section" required />
+              <div className="mb-2">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="font-semibold">Weekly Schedule</span>
+                  <button type="button" className="text-xs px-2 py-1 bg-green-200 rounded" onClick={addDay}>+ Add Day</button>
+                </div>
+                {Array.isArray(form.week) && form.week.map((day: any, dayIdx: number) => (
+                  <div key={dayIdx} className="border rounded p-2 mb-2 bg-gray-50">
+                    <div className="flex items-center gap-2 mb-1">
+                      <input className="border p-1 flex-1" value={day.day} onChange={e => handleDayChange(dayIdx, e.target.value)} placeholder="Day (e.g. Monday)" required />
+                      <button type="button" className="text-xs px-2 py-1 bg-red-200 rounded" onClick={() => removeDay(dayIdx)}>- Remove Day</button>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      {Array.isArray(day.periods) && day.periods.map((period: any, periodIdx: number) => (
+                        <div key={periodIdx} className="flex gap-2 items-center">
+                          <input className="border p-1 flex-1" value={period.subject} onChange={e => handleWeekChange(dayIdx, periodIdx, 'subject', e.target.value)} placeholder="Subject" required />
+                          <input className="border p-1 w-24" value={period.startTime} onChange={e => handleWeekChange(dayIdx, periodIdx, 'startTime', e.target.value)} placeholder="Start Time" required />
+                          <input className="border p-1 w-24" value={period.endTime} onChange={e => handleWeekChange(dayIdx, periodIdx, 'endTime', e.target.value)} placeholder="End Time" required />
+                          <input className="border p-1 flex-1" value={period.teacherName} onChange={e => handleWeekChange(dayIdx, periodIdx, 'teacherName', e.target.value)} placeholder="Teacher Name" required />
+                          <button type="button" className="text-xs px-2 py-1 bg-red-100 rounded" onClick={() => removePeriod(dayIdx, periodIdx)}>-</button>
+                        </div>
+                      ))}
+                      <button type="button" className="text-xs px-2 py-1 bg-blue-100 rounded mt-1" onClick={() => addPeriod(dayIdx)}>+ Add Period</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="flex justify-end gap-2 mt-2">
+                <button type="button" className="px-3 py-1 bg-gray-300 rounded" onClick={() => setShowModal(false)}>Cancel</button>
+                <button type="submit" className="px-3 py-1 bg-blue-600 text-white rounded">Save</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Custom Styles */}
       <style jsx>{`

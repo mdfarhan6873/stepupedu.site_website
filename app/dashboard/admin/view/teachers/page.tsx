@@ -1,11 +1,16 @@
 "use client";
 import { useEffect, useState } from "react";
-import { AcademicCapIcon, MagnifyingGlassIcon, ClipboardDocumentIcon, PhoneIcon, BookOpenIcon } from "@heroicons/react/24/outline";
+import { AcademicCapIcon, MagnifyingGlassIcon, ClipboardDocumentIcon, PhoneIcon, BookOpenIcon, PencilIcon, TrashIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 export default function ViewTeachers() {
   const [teachers, setTeachers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState({ name: '', mobileNo: '', address: '', subject: '' });
+  const [editModal, setEditModal] = useState<{ open: boolean; teacher: any | null }>({ open: false, teacher: null });
+  const [deleteModal, setDeleteModal] = useState<{ open: boolean; teacher: any | null }>({ open: false, teacher: null });
+  const [form, setForm] = useState<any>({});
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetch("/api/users/teacher")
@@ -26,6 +31,47 @@ export default function ViewTeachers() {
   for (let i = 0; i < filtered.length; i += groupSize) {
     grouped.push(filtered.slice(i, i + groupSize));
   }
+
+  // Edit handler
+  const openEdit = (teacher: any) => {
+    setForm({ ...teacher });
+    setEditModal({ open: true, teacher });
+  };
+  const closeEdit = () => setEditModal({ open: false, teacher: null });
+  const handleEditChange = (e: any) => {
+    setForm((f: any) => ({ ...f, [e.target.name]: e.target.value }));
+  };
+  const submitEdit = async () => {
+    setSaving(true);
+    // Ensure id is present in body for PATCH
+    const patchBody = { ...form, id: form._id };
+    await fetch(`/api/users/teacher`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(patchBody),
+    });
+    // Re-fetch from backend to ensure data is up-to-date
+    fetch("/api/users/teacher")
+      .then(res => res.json())
+      .then(data => setTeachers(data));
+    setSaving(false);
+    closeEdit();
+  };
+
+  // Delete handler
+  const openDelete = (teacher: any) => setDeleteModal({ open: true, teacher });
+  const closeDelete = () => setDeleteModal({ open: false, teacher: null });
+  const confirmDelete = async () => {
+    setDeleting(true);
+    await fetch(`/api/users/teacher`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: deleteModal.teacher._id }),
+    });
+    setTeachers((prev) => prev.filter((t) => t._id !== deleteModal.teacher._id));
+    setDeleting(false);
+    closeDelete();
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -181,8 +227,19 @@ export default function ViewTeachers() {
                         </div>
                       </div>
                       
-                      <div className="text-xs text-gray-400 mt-4 pt-4 border-t border-white border-opacity-10">
-                        ID: {teacher._id}
+                      <div className="flex gap-2 mt-4">
+                        <button
+                          className="flex items-center gap-1 px-3 py-1 bg-emerald-500 bg-opacity-80 hover:bg-opacity-100 text-white rounded-lg text-xs font-semibold shadow"
+                          onClick={() => openEdit(teacher)}
+                        >
+                          <PencilIcon className="w-4 h-4" /> Edit
+                        </button>
+                        <button
+                          className="flex items-center gap-1 px-3 py-1 bg-red-500 bg-opacity-80 hover:bg-opacity-100 text-white rounded-lg text-xs font-semibold shadow"
+                          onClick={() => openDelete(teacher)}
+                        >
+                          <TrashIcon className="w-4 h-4" /> Delete
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -192,6 +249,45 @@ export default function ViewTeachers() {
           )}
         </div>
       </div>
+
+      {/* Edit Modal */}
+      {editModal.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-lg relative">
+            <button className="absolute top-3 right-3 text-gray-400 hover:text-gray-700" onClick={closeEdit}>
+              <XMarkIcon className="w-6 h-6" />
+            </button>
+            <h3 className="text-xl font-bold mb-4">Edit Teacher</h3>
+            <div className="grid grid-cols-1 gap-4">
+              <input name="name" value={form.name || ""} onChange={handleEditChange} className="border rounded p-2" placeholder="Name" />
+              <input name="mobileNo" value={form.mobileNo || ""} onChange={handleEditChange} className="border rounded p-2" placeholder="Mobile No" />
+              <input name="address" value={form.address || ""} onChange={handleEditChange} className="border rounded p-2" placeholder="Address" />
+              <input name="password" value={form.password || ""} onChange={handleEditChange} className="border rounded p-2" placeholder="Password" />
+              {/* Subjects editing can be added here if needed */}
+            </div>
+            <div className="flex gap-2 mt-6">
+              <button className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-semibold" onClick={submitEdit} disabled={saving}>{saving ? "Saving..." : "Save Changes"}</button>
+              <button className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold" onClick={closeEdit}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Delete Modal */}
+      {deleteModal.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md relative">
+            <button className="absolute top-3 right-3 text-gray-400 hover:text-gray-700" onClick={closeDelete}>
+              <XMarkIcon className="w-6 h-6" />
+            </button>
+            <h3 className="text-xl font-bold mb-4">Delete Teacher</h3>
+            <p>Are you sure you want to delete <span className="font-semibold">{deleteModal.teacher?.name}</span>?</p>
+            <div className="flex gap-2 mt-6">
+              <button className="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold" onClick={confirmDelete} disabled={deleting}>{deleting ? "Deleting..." : "Delete"}</button>
+              <button className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold" onClick={closeDelete}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Custom Styles */}
       <style jsx>{`

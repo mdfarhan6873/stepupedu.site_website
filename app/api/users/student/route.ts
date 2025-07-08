@@ -36,3 +36,31 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ message: error.message || 'Failed to fetch students' }, { status: 500 });
   }
 }
+
+export async function PATCH(req: NextRequest) {
+  try {
+    await connectDB();
+    const { id, ...data } = await req.json();
+    const updatedStudent = await Student.findByIdAndUpdate(id, data, { new: true });
+    if (!updatedStudent) {
+      return NextResponse.json({ message: 'Student not found' }, { status: 404 });
+    }
+    return NextResponse.json(updatedStudent);
+  } catch (error: any) {
+    return NextResponse.json({ message: error.message || 'Failed to update student' }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    await connectDB();
+    const { id } = await req.json();
+    const deletedStudent = await Student.findByIdAndDelete(id);
+    if (!deletedStudent) {
+      return NextResponse.json({ message: 'Student not found' }, { status: 404 });
+    }
+    return NextResponse.json({ message: 'Student deleted successfully' });
+  } catch (error: any) {
+    return NextResponse.json({ message: error.message || 'Failed to delete student' }, { status: 500 });
+  }
+}

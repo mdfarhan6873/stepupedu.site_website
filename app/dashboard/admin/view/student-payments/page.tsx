@@ -6,6 +6,9 @@ export default function ViewStudentPayments() {
   const [payments, setPayments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState({ mobileNo: '', paidBy: '', mode: '' });
+  const [selected, setSelected] = useState<any | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [form, setForm] = useState({ amount: '', paidBy: '', mobileNo: '', paymentDate: '', remark: '', utrNo: '', mode: '' });
 
   useEffect(() => {
     fetch("/api/student-payment")
@@ -25,6 +28,50 @@ export default function ViewStudentPayments() {
   for (let i = 0; i < filtered.length; i += groupSize) {
     grouped.push(filtered.slice(i, i + groupSize));
   }
+
+  const handleEdit = (payment: any) => {
+    setSelected(payment);
+    setForm({
+      amount: payment.amount || '',
+      paidBy: payment.paidBy || '',
+      mobileNo: payment.mobileNo || '',
+      paymentDate: payment.paymentDate ? payment.paymentDate.slice(0, 10) : '',
+      remark: payment.remark || '',
+      utrNo: payment.utrNo || '',
+      mode: payment.mode || '',
+    });
+    setShowModal(true);
+  };
+
+  const handleDelete = async (paymentId: string) => {
+    if (!window.confirm('Delete this payment?')) return;
+    await fetch('/api/student-payment', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: paymentId }),
+    });
+    setPayments(payments.filter(p => p._id !== paymentId));
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selected) return;
+    await fetch('/api/student-payment', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: selected._id, ...form, amount: Number(form.amount) }),
+    });
+    setShowModal(false);
+    setSelected(null);
+    // Refresh payments
+    fetch('/api/student-payment')
+      .then(res => res.json())
+      .then(data => setPayments(data));
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -109,12 +156,9 @@ export default function ViewStudentPayments() {
                             <p className="text-sm text-gray-300">Student Payment</p>
                           </div>
                         </div>
-                        <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          payment.mode === 'online' 
-                            ? 'bg-green-500 bg-opacity-20 text-green-300' 
-                            : 'bg-blue-500 bg-opacity-20 text-blue-300'
-                        }`}>
-                          {payment.mode}
+                        <div className="flex flex-col gap-1">
+                          <button className="text-xs text-blue-400 hover:underline" onClick={() => handleEdit(payment)}>Edit</button>
+                          <button className="text-xs text-red-400 hover:underline" onClick={() => handleDelete(payment._id)}>Delete</button>
                         </div>
                       </div>
                       
@@ -173,24 +217,27 @@ export default function ViewStudentPayments() {
         </div>
       </div>
 
-      {/* Custom Styles */}
-      <style jsx>{`
-        @keyframes blob {
-          0% { transform: translate(0px, 0px) scale(1); }
-          33% { transform: translate(30px, -50px) scale(1.1); }
-          66% { transform: translate(-20px, 20px) scale(0.9); }
-          100% { transform: translate(0px, 0px) scale(1); }
-        }
-        .animate-blob {
-          animation: blob 7s infinite;
-        }
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-        .animation-delay-4000 {
-          animation-delay: 4s;
-        }
-      `}</style>
+      {/* Edit Payment Modal */}
+      {showModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
+          <div className="bg-white p-6 rounded shadow-lg min-w-[300px]">
+            <h3 className="text-lg font-bold mb-2">Edit Payment</h3>
+            <form onSubmit={handleSubmit}>
+              <input className="border p-1 mb-2 w-full" name="amount" value={form.amount} onChange={handleChange} placeholder="Amount" type="number" required />
+              <input className="border p-1 mb-2 w-full" name="paidBy" value={form.paidBy} onChange={handleChange} placeholder="Paid By" />
+              <input className="border p-1 mb-2 w-full" name="mobileNo" value={form.mobileNo} onChange={handleChange} placeholder="Mobile No" />
+              <input className="border p-1 mb-2 w-full" name="paymentDate" value={form.paymentDate} onChange={handleChange} placeholder="Payment Date" type="date" />
+              <input className="border p-1 mb-2 w-full" name="utrNo" value={form.utrNo} onChange={handleChange} placeholder="UTR No" />
+              <input className="border p-1 mb-2 w-full" name="mode" value={form.mode} onChange={handleChange} placeholder="Mode (online/cash)" />
+              <textarea className="border p-1 mb-2 w-full" name="remark" value={form.remark} onChange={handleChange} placeholder="Remark" />
+              <div className="flex justify-end gap-2 mt-2">
+                <button type="button" className="px-3 py-1 bg-gray-300 rounded" onClick={() => setShowModal(false)}>Cancel</button>
+                <button type="submit" className="px-3 py-1 bg-blue-600 text-white rounded">Save</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

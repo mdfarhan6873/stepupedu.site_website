@@ -58,6 +58,7 @@ const Admin = () => {
   const quickActions = [
     { href: '/dashboard/admin/add-student', icon: UserPlusIcon, label: 'Add Student', gradient: 'from-blue-500 to-indigo-600' },
     { href: '/dashboard/admin/add-teacher', icon: AcademicCapIcon, label: 'Add Teacher', gradient: 'from-emerald-500 to-teal-600' },
+    { href: '/dashboard/admin/add-results', icon: ChartBarIcon, label: 'Add Result', gradient: 'from-pink-500 to-rose-600' },
     { href: '/dashboard/admin/add-schedule', icon: CalendarDaysIcon, label: 'Add Schedule', gradient: 'from-purple-500 to-pink-600' },
     { href: '/dashboard/admin/add-notification', icon: BellIcon, label: 'Add Notification', gradient: 'from-yellow-500 to-orange-500' },
     { href: '/dashboard/admin/add-notes', icon: DocumentTextIcon, label: 'Add Notes', gradient: 'from-violet-500 to-purple-600' },
@@ -73,6 +74,7 @@ const Admin = () => {
     { href: '/dashboard/admin/view/teacher-payments', icon: CurrencyRupeeIcon, label: 'Teacher Payments', gradient: 'from-orange-500 to-red-500' },
     { href: '/dashboard/admin/view/notes', icon: DocumentTextIcon, label: 'Notes', gradient: 'from-violet-500 to-purple-600' },
     { href: '/dashboard/admin/view/notifications', icon: BellIcon, label: 'Notifications', gradient: 'from-yellow-500 to-orange-500' },
+    { href: '/dashboard/admin/view/results', icon: ChartBarIcon, label: 'Results', gradient: 'from-pink-500 to-rose-600' },
   ];
 
   const ActionCard = ({ action, index }: { action: any, index: number }) => (

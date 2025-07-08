@@ -85,6 +85,29 @@ const StudentDashboard = () => {
           </div>
         </div>
 
+        {/* View Results Section */}
+        <div className="mb-8">
+          <h2 className="text-xl font-bold text-white mb-6">View Results</h2>
+          <a href="/dashboard/student/view-results">
+            <div className="bg-white bg-opacity-10 backdrop-blur-xl p-6 rounded-3xl border border-white border-opacity-20 shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer group transform hover:-translate-y-2 hover:scale-105">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className="p-4 rounded-2xl bg-gradient-to-r from-pink-500 to-purple-600 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a4 4 0 014-4h4m0 0V7m0 4l-4-4m4 4l4-4" /></svg>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-white">Results</h3>
+                    <p className="text-gray-300 text-sm">See all published results</p>
+                  </div>
+                </div>
+                <svg className="w-6 h-6 text-gray-300 group-hover:text-white transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </div>
+            </div>
+          </a>
+        </div>
+
         {/* WhatsApp Section */}
         <div className="mb-8">
           <h2 className="text-xl font-bold text-white mb-6">Connect with Us</h2>

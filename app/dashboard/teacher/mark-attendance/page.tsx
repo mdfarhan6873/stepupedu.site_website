@@ -1,6 +1,7 @@
+
 'use client'
 import React, { useEffect, useState } from 'react';
-import { ClipboardDocumentCheckIcon, CalendarIcon, ArrowLeftIcon, UserGroupIcon } from '@heroicons/react/24/outline';
+import { ClipboardDocumentCheckIcon, CalendarIcon, ArrowLeftIcon, UserGroupIcon, ExclamationTriangleIcon, CheckCircleIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
 import { usePatchSubjectAttendance } from '@/lib/hooks/usePatchSubjectAttendance';
 
@@ -14,6 +15,7 @@ const MarkAttendance = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
+  const [showConfirmation, setShowConfirmation] = useState(false);
   const router = useRouter();
   const { patchAttendance, loading: patching } = usePatchSubjectAttendance();
 
@@ -51,11 +53,17 @@ const MarkAttendance = () => {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSaveClick = (e: React.FormEvent) => {
     e.preventDefault();
+    setShowConfirmation(true);
+  };
+
+  const handleConfirmSubmit = async () => {
     setLoading(true);
     setSuccess("");
     setError("");
+    setShowConfirmation(false);
+    
     try {
       await patchAttendance({
         className,
@@ -74,6 +82,14 @@ const MarkAttendance = () => {
       setLoading(false);
     }
   };
+
+  const handleCancelSubmit = () => {
+    setShowConfirmation(false);
+  };
+
+  // Calculate attendance statistics
+  const presentCount = Object.values(attendance).filter(status => status === 'Present').length;
+  const absentCount = Object.values(attendance).filter(status => status === 'Absent').length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -110,7 +126,7 @@ const MarkAttendance = () => {
 
           {/* Form Card */}
           <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-3xl p-8 border border-white border-opacity-20 shadow-xl mb-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSaveClick} className="space-y-6">
               {/* Date Display */}
               <div className="bg-white bg-opacity-5 rounded-2xl p-1">
                 <div className="flex items-center gap-1 mb-3">
@@ -255,6 +271,102 @@ const MarkAttendance = () => {
           </div>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {showConfirmation && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-3xl shadow-2xl p-6 w-full max-w-md border border-white border-opacity-20">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-orange-500 bg-opacity-20 rounded-xl flex items-center justify-center">
+                  <ExclamationTriangleIcon className="w-5 h-5 text-orange-400" />
+                </div>
+                <h3 className="text-xl font-bold text-white">Confirm Submission</h3>
+              </div>
+              <button 
+                onClick={handleCancelSubmit}
+                className="text-gray-300 hover:text-white transition-colors duration-300 p-1"
+              >
+                <XMarkIcon className="h-6 w-6" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="space-y-4 mb-6">
+              <p className="text-gray-300 text-center">
+                Please review your attendance before submitting:
+              </p>
+              
+              {/* Summary */}
+              <div className="bg-white bg-opacity-5 rounded-xl p-4 space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-gray-300">Date:</span>
+                  <span className="text-white font-medium">{new Date(date).toLocaleDateString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-300">Class:</span>
+                  <span className="text-white font-medium">{className} - {section}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-300">Subject:</span>
+                  <span className="text-white font-medium">{subject}</span>
+                </div>
+                <div className="border-t border-white border-opacity-20 pt-3">
+                  <div className="flex justify-between">
+                    <span className="text-green-300 flex items-center gap-1">
+                      <CheckCircleIcon className="w-4 h-4" />
+                      Present:
+                    </span>
+                    <span className="text-green-300 font-bold">{presentCount}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-red-300 flex items-center gap-1">
+                      <XMarkIcon className="w-4 h-4" />
+                      Absent:
+                    </span>
+                    <span className="text-red-300 font-bold">{absentCount}</span>
+                  </div>
+                  <div className="flex justify-between border-t border-white border-opacity-20 pt-2 mt-2">
+                    <span className="text-white font-medium">Total:</span>
+                    <span className="text-white font-bold">{students.length}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-orange-500 bg-opacity-10 border border-orange-500 border-opacity-30 rounded-xl p-3">
+                <p className="text-orange-300 text-sm text-center">
+                  ⚠️ Once submitted, this attendance cannot be easily modified. Please double-check all entries.
+                </p>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-3">
+              <button 
+                onClick={handleCancelSubmit}
+                className="flex-1 bg-gray-500 bg-opacity-20 text-gray-300 py-3 rounded-xl font-medium hover:bg-opacity-30 transition-all duration-300"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleConfirmSubmit}
+                disabled={patching}
+                className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {patching ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Submitting...
+                  </div>
+                ) : (
+                  "Yes, Submit"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Custom Styles */}
       <style jsx>{`

@@ -84,7 +84,7 @@ export default function LoginPage() {
       </div>
 
       {/* Header */}
-      <div className="relative z-10 pt-8 pb-3 px-6">
+      <div className="relative z-10 pt-8 pb-3 px-2">
         <div className="text-center">
           <div className="mx-auto w-20 h-20 bg-white bg-opacity-20 backdrop-blur-lg rounded-3xl flex items-center justify-center mb-6 shadow-2xl">
             <div className={`w-12 h-12 bg-gradient-to-r ${currentRole.gradient} rounded-2xl flex items-center justify-center`}>
@@ -97,7 +97,7 @@ export default function LoginPage() {
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 flex-1 px-6">
+      <div className="relative z-10 flex-1 px-2">
         <div className="max-w-md mx-auto">
           {/* Role Selection */}
           <div className="mb-3">
@@ -128,14 +128,14 @@ export default function LoginPage() {
           </div>
 
           {/* Login Form */}
-          <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white border-opacity-20">
+          <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-3xl p-4 shadow-2xl border border-white border-opacity-20">
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Mobile Number Input */}
               <div className="space-y-2">
-                <label className="text-white text-sm font-semibold flex items-center gap-2">
+                {/* <label className="text-white text-sm font-semibold flex items-center gap-2">
                   <DevicePhoneMobileIcon className="w-4 h-4" />
                   Mobile Number
-                </label>
+                </label> */}
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                     <DevicePhoneMobileIcon className="h-5 w-5 text-gray-300" />
@@ -155,10 +155,10 @@ export default function LoginPage() {
 
               {/* Password Input */}
               <div className="space-y-2">
-                <label className="text-white text-sm font-semibold flex items-center gap-2">
+                {/* <label className="text-white text-sm font-semibold flex items-center gap-2">
                   <LockClosedIcon className="w-4 h-4" />
                   Password
-                </label>
+                </label> */}
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                     <LockClosedIcon className="h-5 w-5 text-gray-300" />

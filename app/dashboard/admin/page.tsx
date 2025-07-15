@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { UserPlusIcon, PlusCircleIcon, ChatBubbleLeftRightIcon, HomeIcon, CurrencyRupeeIcon, DocumentTextIcon, BellIcon } from '@heroicons/react/24/outline';
+import { UserPlusIcon, PlusCircleIcon, ChatBubbleLeftRightIcon, HomeIcon, CurrencyRupeeIcon, DocumentTextIcon, BellIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import { UserGroupIcon, AcademicCapIcon, CalendarDaysIcon, ChartBarIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
@@ -77,6 +77,8 @@ const Admin = () => {
     { href: '/dashboard/admin/view/notifications', icon: BellIcon, label: 'Notifications', gradient: 'from-yellow-500 to-orange-500' },
     { href: '/dashboard/admin/view/results', icon: ChartBarIcon, label: 'Results', gradient: 'from-pink-500 to-rose-600' },
     { href: '/dashboard/admin/view/whatsapp-groups', icon: ChatBubbleLeftRightIcon, label: 'WhatsApp Groups', gradient: 'from-green-500 to-emerald-600' },
+    { href: '/dashboard/admin/view/student-attendance', icon: CheckCircleIcon, label: 'Student Attendance', gradient: 'from-cyan-500 to-blue-600' },
+    { href: '/dashboard/admin/view/class-attendance', icon: CalendarDaysIcon, label: 'Class Attendance', gradient: 'from-indigo-500 to-purple-600' },
   ];
 
   const ActionCard = ({ action, index }: { action: any, index: number }) => (

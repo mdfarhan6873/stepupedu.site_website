@@ -62,6 +62,7 @@ const Admin = () => {
     { href: '/dashboard/admin/add-schedule', icon: CalendarDaysIcon, label: 'Add Schedule', gradient: 'from-purple-500 to-pink-600' },
     { href: '/dashboard/admin/add-notification', icon: BellIcon, label: 'Add Notification', gradient: 'from-yellow-500 to-orange-500' },
     { href: '/dashboard/admin/add-notes', icon: DocumentTextIcon, label: 'Add Notes', gradient: 'from-violet-500 to-purple-600' },
+    { href: '/dashboard/admin/add-whatsapp-group', icon: ChatBubbleLeftRightIcon, label: 'Add WhatsApp Group', gradient: 'from-green-500 to-emerald-600' },
     { href: '/dashboard/admin/add-student-payment', icon: CurrencyRupeeIcon, label: 'Student Payment', gradient: 'from-pink-500 to-rose-600' },
     { href: '/dashboard/admin/add-teacher-payment', icon: CurrencyRupeeIcon, label: 'Teacher Payment', gradient: 'from-orange-500 to-red-500' },
   ];
@@ -75,6 +76,7 @@ const Admin = () => {
     { href: '/dashboard/admin/view/notes', icon: DocumentTextIcon, label: 'Notes', gradient: 'from-violet-500 to-purple-600' },
     { href: '/dashboard/admin/view/notifications', icon: BellIcon, label: 'Notifications', gradient: 'from-yellow-500 to-orange-500' },
     { href: '/dashboard/admin/view/results', icon: ChartBarIcon, label: 'Results', gradient: 'from-pink-500 to-rose-600' },
+    { href: '/dashboard/admin/view/whatsapp-groups', icon: ChatBubbleLeftRightIcon, label: 'WhatsApp Groups', gradient: 'from-green-500 to-emerald-600' },
   ];
 
   const ActionCard = ({ action, index }: { action: any, index: number }) => (
@@ -196,7 +198,7 @@ const Admin = () => {
                     <ChatBubbleLeftRightIcon className="h-8 w-8 text-white" />
                   </div>
                   <span className="text-sm font-semibold text-white text-center leading-tight">
-                    WhatsApp Group
+                    Main WhatsApp
                   </span>
                 </div>
               </div>

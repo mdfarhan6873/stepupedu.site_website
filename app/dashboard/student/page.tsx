@@ -188,7 +188,7 @@ const StudentDashboard = () => {
       </div>
 
       {/* Header */}
-      <div className="relative z-10 pt-16 pb-8 px-6">
+      <div className="relative z-10 pt-16 pb-8 px-4">
         <div className="text-center">
           <div className="mx-auto w-20 h-20 bg-white bg-opacity-20 backdrop-blur-lg rounded-3xl flex items-center justify-center mb-6 shadow-2xl">
             <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center">
@@ -209,7 +209,7 @@ const StudentDashboard = () => {
         </div>
       </div>
 
-      <div className="relative z-10 px-6 pb-24">
+      <div className="relative z-10 px-2 pb-24">
         {/* Welcome Card */}
         <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-3xl p-6 mb-8 border border-white border-opacity-20">
           <div className="text-center">
@@ -237,7 +237,7 @@ const StudentDashboard = () => {
         <div className="mb-8">
           <h2 className="text-xl font-bold text-white mb-6">View Results</h2>
           <a href="/dashboard/student/view-results">
-            <div className="bg-white bg-opacity-10 backdrop-blur-xl p-6 rounded-3xl border border-white border-opacity-20 shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer group transform hover:-translate-y-2 hover:scale-105">
+            <div className="bg-white bg-opacity-10 backdrop-blur-xl p-2 rounded-3xl border border-white border-opacity-20 shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer group transform hover:-translate-y-2 hover:scale-101">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                   <div className="p-4 rounded-2xl bg-gradient-to-r from-pink-500 to-purple-600 shadow-lg group-hover:scale-110 transition-transform duration-300">
@@ -270,11 +270,11 @@ const StudentDashboard = () => {
           ) : whatsAppGroup ? (
             <div 
               onClick={handleWhatsAppClick}
-              className="bg-white bg-opacity-10 backdrop-blur-xl p-6 rounded-3xl border border-white border-opacity-20 shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer group transform hover:-translate-y-2 hover:scale-105"
+              className="bg-white bg-opacity-10 backdrop-blur-xl p-2 rounded-3xl border border-white border-opacity-20 shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer group transform hover:-translate-y-2 hover:scale-101"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
-                  <div className="p-4 rounded-2xl bg-gradient-to-r from-green-500 to-emerald-600 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <div className="p-2 rounded-2xl bg-gradient-to-r from-green-500 to-emerald-600 shadow-lg group-hover:scale-110 transition-transform duration-300">
                     <ChatBubbleLeftRightIcon className="h-8 w-8 text-white" />
                   </div>
                   <div>

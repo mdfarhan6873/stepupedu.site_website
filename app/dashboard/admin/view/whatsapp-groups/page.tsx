@@ -91,7 +91,7 @@ export default function ViewWhatsAppGroups() {
     navigator.clipboard.writeText(text);
   };
 
-  const classes = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th'];
+  const classes = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
   const sections = ['A', 'B', 'C', 'D', 'E'];
 
   return (

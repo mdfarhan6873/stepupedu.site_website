@@ -2,44 +2,78 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import React, { useState, useEffect } from 'react'
-import { ArrowRightIcon, AcademicCapIcon } from '@heroicons/react/24/outline'
+import { ArrowRightIcon, AcademicCapIcon, StarIcon, UserGroupIcon, BookOpenIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
 import { useRouter } from 'next/navigation'
+import NameCardsScroller from '@/components/NameCardsScroller'
+import AddNameCardForm from '@/components/AddNameCardForm'
+import NameCardsList from '@/components/NameCardsList'
+import ContactForm from '@/components/ContactForm'
+import EnquiriesManager from '@/components/EnquiriesManager'
+import DirectorCards from '@/components/DirectorCards'
+import { INameCard } from '@/lib/models/NameCard'
 
 const Home = () => {
-  const [currentImage, setCurrentImage] = useState(0)
+  
   const [showAppPopup, setShowAppPopup] = useState(false)
-  const router = useRouter()
-  const images = [
-    { src: '/reading.png', alt: 'Educational illustration 1' },
-    { src: '/webinar.png', alt: 'Educational illustration 2' },
-    { src: '/video-conference.png', alt: 'Educational illustration 3' }
-  ]
+  const [nameCards, setNameCards] = useState<INameCard[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Fetch name cards from API
+  const fetchNameCards = async () => {
+    try {
+      const response = await fetch('/api/name-cards')
+      const data = await response.json()
+      if (data.success) {
+        setNameCards(data.data)
+      }
+    } catch (error) {
+      console.error('Error fetching name cards:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   useEffect(() => {
-    // Check for session cookie and redirect if logged in
-    const sessionData = document.cookie
-      .split(';')
-      .find(cookie => cookie.trim().startsWith('session='));
-    if (sessionData) {
-      try {
-        const userData = JSON.parse(decodeURIComponent(sessionData.split('=')[1]));
-        if (userData?.user?.role) {
-          if (userData.user.role === 'student') router.replace('/dashboard/student')
-          else if (userData.user.role === 'teacher') router.replace('/dashboard/teacher')
-          else if (userData.user.role === 'admin') router.replace('/dashboard/admin')
-        }
-      } catch (err) {
-        // Ignore errors, show home page
-      }
-    }
-    const timer = setInterval(() => {
-      setCurrentImage((prev) => (prev + 1) % images.length)
-    }, 3000) // Change image every 3 seconds
+    fetchNameCards()
+  }, [])
 
-    return () => {
-      clearInterval(timer)
+  const handleCardAdded = () => {
+    fetchNameCards()
+  }
+
+  const handleCardDeleted = () => {
+    fetchNameCards()
+  }
+
+  const features = [
+    {
+      icon: <AcademicCapIcon className="w-8 h-8" />,
+      title: "Expert Faculty",
+      description: "Learn from industry experts with years of teaching experience"
+    },
+    {
+      icon: <BookOpenIcon className="w-8 h-8" />,
+      title: "Comprehensive Curriculum",
+      description: "Well-structured courses designed for maximum learning outcomes"
+    },
+    {
+      icon: <UserGroupIcon className="w-8 h-8" />,
+      title: "Small Class Sizes",
+      description: "Personalized attention with optimal student-teacher ratios"
+    },
+    {
+      icon: <StarIcon className="w-8 h-8" />,
+      title: "Proven Results",
+      description: "Track record of student success and academic excellence"
     }
-  }, [router, images.length])
+  ]
+
+  const stats = [
+    { number: "5000+", label: "Students Taught" },
+    { number: "15+", label: "Years Experience" },
+    { number: "95%", label: "Success Rate" },
+    { number: "50+", label: "Expert Teachers" }
+  ]
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -75,83 +109,135 @@ const Home = () => {
         <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
       </div>
 
-      <main className='relative z-10 flex flex-col justify-center items-center min-h-screen px-6'>
-        {/* Logo Section */}
-        {/* <div className="text-center mb-8">
-          <div className="mx-auto w-24 h-24 bg-white bg-opacity-20 backdrop-blur-lg rounded-3xl flex items-center justify-center mb-6 shadow-2xl">
-            <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center">
-              <AcademicCapIcon className="w-8 h-8 text-white" />
+      {/* Header */}
+      <header className="relative z-10 flex justify-between items-center p-6 bg-white bg-opacity-5 backdrop-blur-lg border-b border-white border-opacity-10">
+        <Link href="/" className="flex items-center gap-2 text-white font-bold text-xl">
+          <AcademicCapIcon className="w-8 h-8" />
+          <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            StepUp Education
+          </span>
+        </Link>
+        <nav className="flex items-center gap-6">
+          <Link href="/about" className="text-white hover:text-purple-300 transition-colors duration-300 font-medium">About</Link>
+          <Link href="/courses" className="text-white hover:text-purple-300 transition-colors duration-300 font-medium">Courses</Link>
+          <Link href="/contact-us" className="text-white hover:text-purple-300 transition-colors duration-300 font-medium">Contact</Link>
+          <Link href="/login" className="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-4 py-2 rounded-full hover:scale-105 transition-transform duration-300 font-medium">Login</Link>
+        </nav>
+      </header>
+
+      {/* Hero Section */}
+      <section className='relative z-10 pt-20 pb-16 flex flex-col items-center justify-center min-h-[80vh]'>
+        <div className="text-center mb-12 text-white max-w-5xl mx-auto px-6">
+          <h1 className='xl:text-7xl lg:text-6xl md:text-5xl sm:text-4xl text-3xl font-bold mb-6 leading-tight'>
+            Transform Your Future with
+            <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent block mt-2">
+              Quality Education
+            </span>
+          </h1>
+          <p className='text-xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed'>
+            Join thousands of successful students who have achieved their dreams through our comprehensive educational programs and expert guidance.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Link href="#contact" className="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-8 py-4 rounded-full shadow-lg hover:scale-105 transition-transform duration-300 font-semibold text-lg">
+              Get Started Today
+            </Link>
+            <Link href="#features" className="border-2 border-white border-opacity-30 text-white px-8 py-4 rounded-full hover:bg-white hover:bg-opacity-10 transition-all duration-300 font-semibold text-lg">
+              Learn More
+            </Link>
+          </div>
+        </div>
+
+        {/* Stats Section */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto px-6">
+          {stats.map((stat, index) => (
+            <div key={index} className="text-center">
+              <div className="text-3xl md:text-4xl font-bold text-white mb-2">{stat.number}</div>
+              <div className="text-gray-300 text-sm md:text-base">{stat.label}</div>
             </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section id="features" className="relative z-10 py-20 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-white mb-4">Why Choose StepUp Education?</h2>
+            <p className="text-gray-300 text-lg max-w-2xl mx-auto">
+              We provide world-class education with modern teaching methodologies and personalized attention to ensure your success.
+            </p>
           </div>
-          
-          <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-3xl p-6 border border-white border-opacity-20 shadow-xl mb-8">
-            <Image
-              src="/logo.png"
-              alt="Logo of the stepupeducation which is powered by stepupedu.site"
-              width={280}
-              height={280}
-              className="mx-auto"
-            />
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {features.map((feature, index) => (
+              <div key={index} className="bg-white bg-opacity-10 backdrop-blur-lg rounded-2xl p-6 border border-white border-opacity-20 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 text-center">
+                <div className="text-purple-400 mb-4 flex justify-center">
+                  {feature.icon}
+                </div>
+                <h3 className="text-white font-semibold text-lg mb-3">{feature.title}</h3>
+                <p className="text-gray-300 text-sm">{feature.description}</p>
+              </div>
+            ))}
           </div>
-        </div> */}
+        </div>
+      </section>
+
+      {/* Name Cards Scroller Section */}
+      <section className="relative z-10 py-16 px-2">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl font-bold text-white mb-4">Our Students & Teachers</h2>
+          <p className="text-gray-300 text-lg">Celebrating achievements and progress of our learning community</p>
+        </div>
         
-        {/* Image Carousel Section */}
-        <div className="w-full max-w-md mx-auto mb-2">
-          <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-3xl p-6 border border-white border-opacity-20 shadow-xl">
-            <div className="relative w-[280px] h-[280px] mx-auto">
-              <div className="absolute inset-0 transition-opacity duration-1000 ease-in-out">
-                <Image
-                  src={images[currentImage].src}
-                  alt={images[currentImage].alt}
-                  fill
-                  className="object-contain rounded-2xl"
-                />
-              </div>
-              
-              {/* Image Indicators */}
-              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-                {images.map((_, index) => (
-                  <div
-                    key={index}
-                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                      currentImage === index 
-                        ? 'bg-gradient-to-r from-purple-500 to-pink-600 w-6' 
-                        : 'bg-white bg-opacity-40'
-                    }`}
-                  />
-                ))}
-              </div>
+        {isLoading ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+          </div>
+        ) : (
+          <NameCardsScroller cards={nameCards} />
+        )}
+      </section>
+
+      {/* Directors Section */}
+      <section className="relative z-10 py-20 px-6">
+        <DirectorCards />
+      </section>
+
+      {/* Contact Section */}
+      <section id="contact" className="relative z-10 py-20 px-6">
+        <div className="max-w-4xl mx-auto">
+          <ContactForm />
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className='relative z-10 py-12 px-6'>
+        <div className="max-w-6xl mx-auto">
+          <div className="bg-white bg-opacity-10 backdrop-blur-lg rounded-2xl p-8 border border-white border-opacity-20 text-center">
+            <div className="flex justify-center items-center gap-2 mb-4">
+              <AcademicCapIcon className="w-6 h-6 text-purple-400" />
+              <span className="text-white font-bold text-xl">StepUp Education Institute</span>
+            </div>
+            <p className="text-gray-300 mb-4">Empowering minds, shaping futures</p>
+            <div className="flex justify-center gap-6 mb-6">
+              <Link href="/about" className="text-gray-300 hover:text-white transition-colors">About</Link>
+              <Link href="/courses" className="text-gray-300 hover:text-white transition-colors">Courses</Link>
+              <Link href="/contact-us" className="text-gray-300 hover:text-white transition-colors">Contact</Link>
+              <Link href="/privacy" className="text-gray-300 hover:text-white transition-colors">Privacy</Link>
+            </div>
+            <div className="border-t border-white border-opacity-20 pt-4">
+              <p className='text-center text-gray-400 text-sm'>
+                © 2024 StepUp Education Institute. All rights reserved. | Powered by stepupedu.site
+              </p>
             </div>
           </div>
         </div>
+      </footer>
 
-        {/* Welcome Message */}
-        <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-3xl p-6 mb-8 border border-white border-opacity-20 shadow-xl max-w-md w-full">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-white mb-2">Welcome to Step Up Education</h1>
-            <p className="text-gray-300">Your journey to excellence starts here</p>
-          </div>
-        </div>
-
-        {/* Get Started Button */}
-        <div className="w-full max-w-md">
-          <Link href="/login">
-            <div className='group relative w-full bg-gradient-to-r from-purple-500 to-pink-600 rounded-2xl p-4 shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 hover:scale-105'>
-              <div className="flex items-center justify-center space-x-3">
-                <span className="text-white font-bold text-xl">Get Started</span>
-                <ArrowRightIcon className="h-6 w-6 text-white group-hover:translate-x-1 transition-transform duration-300" />
-              </div>
-            </div>
-          </Link>
-        </div>
-
-        {/* Footer */}
-        <div className="mt-3 bg-white bg-opacity-10 backdrop-blur-lg rounded-2xl px-6 py-3 border border-white border-opacity-20">
-          <footer className='text-center text-gray-300 text-sm'>
-            Powered by stepupedu.site
-          </footer>
-        </div>
-      </main>
+      {/* Floating Action Buttons
+      <AddNameCardForm onCardAdded={handleCardAdded} />
+      <NameCardsList cards={nameCards} onCardDeleted={handleCardDeleted} />
+      <EnquiriesManager /> */}
 
       {/* Download App Button */}
       <button
@@ -182,6 +268,9 @@ const Home = () => {
         }
         .animation-delay-4000 {
           animation-delay: 4s;
+        }
+        html {
+          scroll-behavior: smooth;
         }
       `}</style>
     </div>

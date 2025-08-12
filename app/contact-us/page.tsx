@@ -5,7 +5,7 @@ import { PhoneIcon, ClipboardDocumentIcon, CheckCircleIcon, EnvelopeIcon, MapPin
 
 const ContactUs = () => {
   const [copied, setCopied] = useState(false);
-  const mobileNo = "9234666761";
+  const mobileNo = "9262801624";
 
   const handleCopy = () => {
     navigator.clipboard.writeText(mobileNo);

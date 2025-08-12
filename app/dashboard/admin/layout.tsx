@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { BellIcon, ArrowRightOnRectangleIcon, UserIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
+import Link from 'next/link';
 
 interface User {
   id: string;
@@ -86,9 +87,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
+              <Link href='/dashboard/admin'><div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
                 <ShieldCheckIcon className="w-5 h-5 text-white" />
-              </div>
+              </div></Link>
               <div>
                 <span className="font-semibold text-lg text-white">{user?.name || 'Admin'}</span>
                 <div className="flex items-center space-x-2">

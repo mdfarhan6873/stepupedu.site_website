@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { UserPlusIcon, PlusCircleIcon, ChatBubbleLeftRightIcon, HomeIcon, CurrencyRupeeIcon, DocumentTextIcon, BellIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import { UserPlusIcon, PlusCircleIcon, ChatBubbleLeftRightIcon, HomeIcon, CurrencyRupeeIcon, DocumentTextIcon, BellIcon, CheckCircleIcon, ChatBubbleBottomCenterIcon } from '@heroicons/react/24/outline';
 import { UserGroupIcon, AcademicCapIcon, CalendarDaysIcon, ChartBarIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
@@ -79,6 +79,7 @@ const Admin = () => {
     { href: '/dashboard/admin/view/whatsapp-groups', icon: ChatBubbleLeftRightIcon, label: 'WhatsApp Groups', gradient: 'from-green-500 to-emerald-600' },
     { href: '/dashboard/admin/view/student-attendance', icon: CheckCircleIcon, label: 'Student Attendance', gradient: 'from-cyan-500 to-blue-600' },
     { href: '/dashboard/admin/view/class-attendance', icon: CalendarDaysIcon, label: 'Class Attendance', gradient: 'from-indigo-500 to-purple-600' },
+    { href: '/dashboard/admin/view/homepagewithEnquaries', icon: ChatBubbleBottomCenterIcon, label: 'Homepage students and enquaries', gradient: 'from-indigo-500 to-purple-600' },
   ];
 
   const ActionCard = ({ action, index }: { action: any, index: number }) => (
@@ -98,7 +99,7 @@ const Admin = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 pb-24">
       {/* Background Animation */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-4 -left-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
@@ -109,12 +110,8 @@ const Admin = () => {
       {/* Header */}
       <div className="relative z-10 pt-16 pb-8 px-6">
         <div className="text-center">
-          <div className="mx-auto w-20 h-20 bg-white bg-opacity-20 backdrop-blur-lg rounded-3xl flex items-center justify-center mb-6 shadow-2xl">
-            <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center">
-              <ChartBarIcon className="w-6 h-6 text-white" />
-            </div>
-          </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Admin Dashboard</h1>
+          
+         
           <p className="text-gray-300 text-lg">Manage your educational platform</p>
           <div className="mt-4 bg-white bg-opacity-10 backdrop-blur-lg rounded-2xl px-4 py-2 inline-block">
             <p className="text-white text-sm font-medium">{currentTime.toLocaleDateString()}</p>
@@ -280,10 +277,7 @@ const Admin = () => {
         <div className="w-full flex flex-col items-center mt-4">
           <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-2xl border border-white border-opacity-20 p-6 mx-4">
             <div className="text-center">
-              <div className="h-16 w-16 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <HomeIcon className="h-8 w-8 text-white" />
-              </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Welcome to Admin Dashboard</h3>
+             
               <p className="text-gray-300 text-sm">Manage your educational platform efficiently</p>
             </div>
           </div>

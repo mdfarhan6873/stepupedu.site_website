@@ -13,7 +13,7 @@ import DirectorCards from '@/components/DirectorCards'
 import { INameCard } from '@/lib/models/NameCard'
 
 const Home = () => {
-  
+
   const [showAppPopup, setShowAppPopup] = useState(false)
   const [nameCards, setNameCards] = useState<INameCard[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -88,7 +88,7 @@ const Home = () => {
             >
               ×
             </button>
-            
+
             <h3 className="text-lg font-bold mb-2 text-gray-800">Download Our App</h3>
             <p className="text-gray-600 mb-4">Get the best experience on mobile. Download the Step Up Education app now!</p>
             <a
@@ -121,7 +121,13 @@ const Home = () => {
           <Link href="/about" className="text-white hover:text-purple-300 transition-colors duration-300 font-medium">About</Link>
           <Link href="/courses" className="text-white hover:text-purple-300 transition-colors duration-300 font-medium">Courses</Link>
           <Link href="/contact-us" className="text-white hover:text-purple-300 transition-colors duration-300 font-medium">Contact</Link>
-          <Link href="/login" className="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-4 py-2 rounded-full hover:scale-105 transition-transform duration-300 font-medium">Login</Link>
+          <Link
+            href="https://stepupeduapplication.netlify.app/login"
+            target="_self"
+            className="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-4 py-2 rounded-full hover:scale-105 transition-transform duration-300 font-medium"
+          >
+            Login
+          </Link>
         </nav>
       </header>
 
@@ -188,7 +194,7 @@ const Home = () => {
           <h2 className="text-4xl font-bold text-white mb-4">Our Students & Teachers</h2>
           <p className="text-gray-300 text-lg">Celebrating achievements and progress of our learning community</p>
         </div>
-        
+
         {isLoading ? (
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
@@ -249,7 +255,7 @@ const Home = () => {
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4m-7 7h10" />
         </svg>
-        <span className="hidden sm:inline text-sm font-semibold">Download App</span>
+        <span className="inline text-sm font-semibold">Download App</span>
       </button>
 
       {/* Custom Styles */}

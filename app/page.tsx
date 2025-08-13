@@ -76,7 +76,7 @@ const Home = () => {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-x-hidden">
       {/* Download App Popup */}
       {showAppPopup && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
@@ -118,9 +118,8 @@ const Home = () => {
           </span>
         </Link>
         <nav className="flex items-center gap-6">
-          <Link href="/about" className="text-white hover:text-purple-300 transition-colors duration-300 font-medium">About</Link>
-          <Link href="/courses" className="text-white hover:text-purple-300 transition-colors duration-300 font-medium">Courses</Link>
-          <Link href="/contact-us" className="text-white hover:text-purple-300 transition-colors duration-300 font-medium">Contact</Link>
+         
+          
           <Link
             href="https://stepupeduapplication.netlify.app/login"
             target="_self"

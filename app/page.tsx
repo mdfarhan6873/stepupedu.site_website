@@ -92,7 +92,7 @@ const Home = () => {
             <h3 className="text-lg font-bold mb-2 text-gray-800">Download Our App</h3>
             <p className="text-gray-600 mb-4">Get the best experience on mobile. Download the Step Up Education app now!</p>
             <a
-              href="/app-release.apk"
+              href="/stepupeducation.apk"
               download
               className="inline-block bg-gradient-to-r from-purple-500 to-pink-600 text-white font-semibold px-6 py-2 rounded-xl shadow hover:scale-105 hover:shadow-lg transition-all duration-300"
             >

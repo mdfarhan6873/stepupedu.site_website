@@ -70,7 +70,7 @@ const Home = () => {
 
   const stats = [
     { number: "5000+", label: "Students Taught" },
-    { number: "15+", label: "Years Experience" },
+    { number: "7+", label: "Years Experience" },
     { number: "95%", label: "Success Rate" },
     { number: "50+", label: "Expert Teachers" }
   ]
@@ -190,7 +190,7 @@ const Home = () => {
       {/* Name Cards Scroller Section */}
       <section className="relative z-10 py-16 px-2">
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-white mb-4">Our Students & Teachers</h2>
+          <h2 className="text-4xl font-bold text-white mb-4">Our Students</h2>
           <p className="text-gray-300 text-lg">Celebrating achievements and progress of our learning community</p>
         </div>
 
@@ -203,10 +203,10 @@ const Home = () => {
         )}
       </section>
 
-      {/* Directors Section */}
+      {/* Directors Section
       <section className="relative z-10 py-20 px-6">
         <DirectorCards />
-      </section>
+      </section> */}
 
       {/* Contact Section */}
       <section id="contact" className="relative z-10 py-20 px-6">
@@ -225,10 +225,7 @@ const Home = () => {
             </div>
             <p className="text-gray-300 mb-4">Empowering minds, shaping futures</p>
             <div className="flex justify-center gap-6 mb-6">
-              <Link href="/about" className="text-gray-300 hover:text-white transition-colors">About</Link>
-              <Link href="/courses" className="text-gray-300 hover:text-white transition-colors">Courses</Link>
               <Link href="/contact-us" className="text-gray-300 hover:text-white transition-colors">Contact</Link>
-              <Link href="/privacy" className="text-gray-300 hover:text-white transition-colors">Privacy</Link>
             </div>
             <div className="border-t border-white border-opacity-20 pt-4">
               <p className='text-center text-gray-400 text-sm'>
